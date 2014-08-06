@@ -31,4 +31,8 @@ public class Radar extends Thread implements Detector {
 	id.intercept(m);
     }
 
+    public void Stop() {
+	isRunning=false;
+    }
+
 }

@@ -21,14 +21,18 @@ public class GUI_UI implements IOHandler{
 
     @Override
     public void showMessege(String... strings) {
-	// TODO Auto-generated method stub
-	
+	String raw="";
+	for(int i=0;i<strings.length;i++)
+	    raw+=strings[i]+'\n';
+	JOptionPane.showMessageDialog(null, raw);
     }
 
     @Override
     public int getChoice(String... strings) {
-	// TODO Auto-generated method stub
-	return 0;
+	String raw="";
+	for(int i=0;i<strings.length;i++)
+	    raw+=strings[i]+'\n';
+	return Integer.parseInt(JOptionPane.showInputDialog(null, raw));
     }
     
 }

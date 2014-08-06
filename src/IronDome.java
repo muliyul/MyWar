@@ -1,30 +1,67 @@
+import java.io.IOException;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class IronDome{
+public class IronDome {
+    private static int idGenerator = 100;
+    private String id;
     private Radar radar;
+    private Logger logger;
 
-    public IronDome() {
-	radar=new Radar(this);
+    public IronDome(String warName) {
+	radar = new Radar(this);
+	logger = Logger.getLogger(warName);
+	id = "IronDome-" + (idGenerator++);
+	try {
+	    FileHandler fh = new FileHandler("logs/" + warName + "/" + id
+		    + ".log");
+	    fh.setFilter(new ObjectFilter(this));
+	    fh.setFormatter(new WarFormatter());
+	    logger.addHandler(fh);
+	} catch (SecurityException e) {
+	    e.printStackTrace();
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
     }
 
     public void intercept(Missile m) {
 	new Thread(new Runnable() {
 	    public void run() {
-		launchCounterMissile();
+		launchCounterMissile(m);
 		m.destruct();
+		logInterception(m);
 	    }
 	}).start();
     }
 
-    private void launchCounterMissile() {
+    private void launchCounterMissile(Missile m) {
 	try {
-	    Thread.sleep(90*1000);
+	    Thread.sleep(8 * 1000);
 	} catch (InterruptedException e) {
-	    e.printStackTrace();
+	    logFailedInterception(m);
 	}
+    }
+
+    private void logInterception(Missile m) {
+	logger.log(Level.INFO, this + " has intercepted " + m, this);
+    }
+
+    private void logFailedInterception(Missile m) {
+	logger.log(Level.SEVERE, this + " has failed to intercepted " + m, this);
     }
 
     public void start() {
 	radar.start();
     }
 
+    @Override
+    public String toString() {
+	return id;
+    }
+
+    public void Stop() {
+	radar.Stop();
+    }
 }

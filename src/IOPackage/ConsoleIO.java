@@ -2,6 +2,8 @@ package IOPackage;
 import java.io.PrintStream;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
 
 public class ConsoleIO implements IOHandler {
     private Scanner in=new Scanner(System.in);
@@ -26,14 +28,16 @@ public class ConsoleIO implements IOHandler {
 
     @Override
     public void showMessege(String... strings) {
-	// TODO Auto-generated method stub
-	
+	String raw="";
+	for(int i=0;i<strings.length;i++)
+	    raw+=strings[i]+'\n';
+	out.println(raw);
     }
 
     @Override
     public int getChoice(String... strings) {
-	// TODO Auto-generated method stub
-	return 0;
+	showMessege(strings);
+	return in.nextInt();
     }
 
 }
