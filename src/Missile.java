@@ -16,6 +16,7 @@ public class Missile extends Thread implements Destructable {
     private static int idGenerator = 100;
     private State state;
     private String id;
+    private int damage;
     private Destination dest;
     private long launchTime;
     private long flyTime;
@@ -74,7 +75,7 @@ public class Missile extends Thread implements Destructable {
     }
 
     private void logHit() {
-	logger.log(Level.SEVERE, this.id + " has hit " + dest + "!", this);
+	logger.log(Level.SEVERE, this.id + " has hit " + dest + "!" + "("  + damage + ")", this);
     }
 
     private void launch() throws InterruptedException {

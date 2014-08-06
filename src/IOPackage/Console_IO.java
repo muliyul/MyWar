@@ -5,7 +5,7 @@ import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 
-public class ConsoleIO implements IOHandler {
+public class Console_IO implements IOHandler {
     private Scanner in=new Scanner(System.in);
     private PrintStream out=System.out;
 
@@ -16,8 +16,8 @@ public class ConsoleIO implements IOHandler {
 
     @Override
     public String getInput(String s) {
-	in.nextLine();
 	out.println(s);
+	out.flush();
 	return in.nextLine();
     }
 
@@ -40,5 +40,24 @@ public class ConsoleIO implements IOHandler {
 	showMessege(strings);
 	return in.nextInt();
     }
+
+    @Override
+    public void showMessege(String head, String[] options) {
+	// TODO Auto-generated method stub
+	
+    }
+
+    @Override
+    public int getChoice(String head, String[] options) {
+	// TODO Auto-generated method stub
+	return 0;
+    }
+
+    @Override
+    public boolean yesNo(String string) {
+	// TODO Auto-generated method stub
+	return false;
+    }
+
 
 }

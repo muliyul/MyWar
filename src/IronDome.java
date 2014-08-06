@@ -8,11 +8,31 @@ public class IronDome {
     private String id;
     private Radar radar;
     private Logger logger;
+    private int missilesIntercepted;
+
+    public IronDome(String warName, String id) {
+	this.id = id;
+	logger = Logger.getLogger(warName);
+	radar = new Radar(this);
+	missilesIntercepted=0;
+	try {
+	    FileHandler fh = new FileHandler("logs/" + warName + "/" + id
+		    + ".log");
+	    fh.setFilter(new ObjectFilter(this));
+	    fh.setFormatter(new WarFormatter());
+	    logger.addHandler(fh);
+	} catch (SecurityException e) {
+	    e.printStackTrace();
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
 
     public IronDome(String warName) {
 	radar = new Radar(this);
 	logger = Logger.getLogger(warName);
 	id = "IronDome-" + (idGenerator++);
+	missilesIntercepted=0;
 	try {
 	    FileHandler fh = new FileHandler("logs/" + warName + "/" + id
 		    + ".log");
@@ -36,12 +56,13 @@ public class IronDome {
 
     private void launchCounterMissile(Missile m) {
 	try {
-	    Thread.sleep((long) (200+(Math.random() * 15 * 1000)));
-	    if(!m.isAlive())
+	    Thread.sleep((long) (200 + (Math.random() * 15 * 1000)));
+	    if (!m.isAlive())
 		logFailedInterception(m);
-	    else{
-		if(m.getMState()==Missile.State.FLYING){
+	    else {
+		if (m.getMState() == Missile.State.FLYING) {
 		    m.destruct();
+		    missilesIntercepted++;
 		    logInterception(m);
 		}
 	    }
@@ -68,5 +89,9 @@ public class IronDome {
 
     public void Stop() {
 	radar.Stop();
+    }
+
+    public int getMissilesIntercepted() {
+	return missilesIntercepted;
     }
 }

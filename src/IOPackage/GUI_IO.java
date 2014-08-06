@@ -11,12 +11,12 @@ public class GUI_IO implements IOHandler{
 
     @Override
     public String getInput(String s) {
-	return JOptionPane.showInputDialog(s);
+	return JOptionPane.showInputDialog(null,s);
     }
 
     @Override
     public int getInt(String s) {
-	return Integer.parseInt(JOptionPane.showInputDialog(s));
+	return Integer.parseInt(JOptionPane.showInputDialog(null,s));
     }
 
     @Override
@@ -35,5 +35,28 @@ public class GUI_IO implements IOHandler{
 	return Integer.parseInt(JOptionPane.showInputDialog(null, raw));
     }
 
-    
+    @Override
+    public void showMessege(String head, String[] options) {
+	String raw="";
+	raw+=head;
+	for(int i=1;i<options.length;i++)
+	    raw+=(i+1)+") "+options[i]+'\n';
+	showMessege(raw);
+    }
+
+    @Override
+    public int getChoice(String head, String[] options) {
+	String raw="";
+	raw+=head;
+	for(int i=1;i<options.length;i++)
+	    raw+=(i+1)+") "+options[i]+'\n';
+	return Integer.parseInt(JOptionPane.showInputDialog(null, raw)); 
+    }
+
+    @Override
+    public boolean yesNo(String s) {
+	return JOptionPane.YES_OPTION==JOptionPane.showConfirmDialog(
+		null, s, "Confirm dialog", JOptionPane.YES_NO_OPTION);
+    }
+
 }
