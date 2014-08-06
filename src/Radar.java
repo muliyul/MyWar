@@ -7,11 +7,11 @@ public class Radar extends Thread implements Detector {
 
     public Radar(Object o) {
 	owner = o;
-	isRunning=true;
     }
 
     @Override
     public void run() {
+	isRunning=true;
 	while (isRunning) {
 	    Set<Thread> threads = Thread.getAllStackTraces().keySet();
 	    Iterator<Thread> it = threads.iterator();

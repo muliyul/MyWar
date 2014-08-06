@@ -7,13 +7,15 @@ public class WarFormatter extends Formatter {
 
     @Override
     public String format(LogRecord record) {
-	return "D: " + LocalDate.now().getDayOfMonth() + "/"
+	StringBuilder sb=new StringBuilder(1000);
+	sb.append("\r\n\r\nD: " + LocalDate.now().getDayOfMonth() + "/"
 		+ LocalDate.now().getMonthValue() + "/"
 		+ LocalDate.now().getYear() + " T: "
 		+ LocalDateTime.now().getHour() + ":"
 		+ LocalDateTime.now().getMinute() + ":"
 		+ LocalDateTime.now().getSecond() + "\r\n"
-		+ record.getMessage() + "\r\n\r\n";
+		+ record.getMessage() + "\r\n\r\n");
+	return sb.toString().trim();
     }
 
 }

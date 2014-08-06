@@ -30,17 +30,22 @@ public class IronDome {
 	new Thread(new Runnable() {
 	    public void run() {
 		launchCounterMissile(m);
-		m.destruct();
-		logInterception(m);
 	    }
 	}).start();
     }
 
     private void launchCounterMissile(Missile m) {
 	try {
-	    Thread.sleep(8 * 1000);
+	    Thread.sleep((long) (200+(Math.random() * 15 * 1000)));
+	    if(!m.isAlive())
+		logFailedInterception(m);
+	    else{
+		if(m.getMState()==Missile.State.FLYING){
+		    m.destruct();
+		    logInterception(m);
+		}
+	    }
 	} catch (InterruptedException e) {
-	    logFailedInterception(m);
 	}
     }
 

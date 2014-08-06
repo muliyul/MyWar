@@ -9,7 +9,12 @@ public class Missile extends Thread implements Destructable {
 	BEER_SHEVA, ASHDOD, ASHKELON, TEL_AVIV, RAMAT_GAN, KIRYAT_EKRON
     }
 
+    public enum State{
+	LAUNCHING, FLYING
+    }
+    
     private static int idGenerator = 100;
+    private State state;
     private String id;
     private Destination dest;
     private long launchTime;
@@ -51,14 +56,15 @@ public class Missile extends Thread implements Destructable {
     public void run() {
 	try {
 	    synchronized (launcher) {
+		state=State.LAUNCHING;
 		launch();
 	    }
 	} catch (InterruptedException e) {
-	    War.showMessege("FATAL SYSTEM ERROR!");
 	    e.printStackTrace();
 	    return;
 	}
 	try {
+	    state=State.FLYING;
 	    fly();
 	} catch (InterruptedException e) {
 	}
@@ -91,4 +97,7 @@ public class Missile extends Thread implements Destructable {
 	return id;
     }
 
+    public State getMState() {
+        return state;
+    }
 }

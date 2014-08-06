@@ -15,11 +15,12 @@ public class Launcher extends Thread implements Destructable{
 
     public Launcher(String warName) {
 	this.id="L-"+ (idGenerator++);
-	missiles=new ArrayList<>();
+	this.missiles=new ArrayList<>();
 	try{
 	    this.logger=Logger.getLogger(warName+"");
 	    FileHandler fh = new FileHandler("logs/" + warName + "/" + id
 		    + ".log");
+	    fh.setFilter(new ObjectFilter(this));
 	    fh.setFormatter(new WarFormatter());
 	    logger.addHandler(fh);
 	}catch(SecurityException e){
@@ -59,5 +60,10 @@ public class Launcher extends Thread implements Destructable{
 
     public void Stop() {
 	isRunning=false;
+    }
+    
+    @Override
+    public String toString() {
+	return this.id;
     }
 }
