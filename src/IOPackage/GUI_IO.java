@@ -34,5 +34,6 @@ public class GUI_IO implements IOHandler{
 	    raw+=strings[i]+'\n';
 	return Integer.parseInt(JOptionPane.showInputDialog(null, raw));
     }
+
     
 }

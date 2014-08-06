@@ -17,8 +17,13 @@ public class Radar extends Thread implements Detector {
 	    Iterator<Thread> it = threads.iterator();
 	    while (it.hasNext()) {
 		Thread t = it.next();
-		if (t instanceof Missile) {
+		if (t instanceof Missile && t.isAlive()) {
 		    onDetect(t);
+		}
+		try {
+		    sleep(3000);
+		} catch (InterruptedException e) {
+		    e.printStackTrace();
 		}
 	    }
 	}

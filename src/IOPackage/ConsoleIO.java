@@ -16,8 +16,9 @@ public class ConsoleIO implements IOHandler {
 
     @Override
     public String getInput(String s) {
+	in.nextLine();
 	out.println(s);
-	return in.next();
+	return in.nextLine();
     }
 
     @Override

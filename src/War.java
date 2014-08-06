@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import IOPackage.ConsoleIO;
-import IOPackage.GUI_IO;
 import IOPackage.IOHandler;
 
 public class War {
@@ -73,9 +71,9 @@ public class War {
     private static List<Launcher> generateRandomLaunchers(String warName) {
 	List<Launcher> launchers = new ArrayList<>();
 	Random r = new Random();
-	for (int i=0;i<5;i++)
+	for (int i=0;i<3;i++)
 	    launchers.add(new Launcher(warName));
-	for (int i=0;i<15;i++) {
+	for (int i=0;i<7;i++) {
 	    Missile m=new Missile(warName);
 	    int launchNum=r.nextInt(launchers.size());
 	    m.setLauncher(launchers.get(launchNum));
@@ -96,7 +94,6 @@ public class War {
 	try {
 	    this.logger = Logger.getLogger(warName + "");
 	    logger.setUseParentHandlers(false);
-	    logger.setLevel(Level.FINEST);
 	    FileHandler fh = new FileHandler("logs/" + warName + "/" + warName
 		    + ".log");
 	    fh.setFormatter(new WarFormatter());
@@ -111,7 +108,7 @@ public class War {
 	    d.start();
 	for (Launcher l : launchers)
 	    l.start();
-	System.out.println(this.name + " is active!");
+	System.out.println(this.name + " is active!\n");
     }
 
     private void showStatistics(IOHandler io) {
@@ -120,7 +117,7 @@ public class War {
 
     private int showWarMenu(IOHandler io) {
 	return io
-		.getChoice("Here comes menu!", "1) Tada", "2) Tadi", "3) Tade");
+		.getChoice("Here comes the menu!", "1) Tada", "2) Tadi", "3) Tade");
     }
     
     @Override

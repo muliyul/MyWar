@@ -10,7 +10,7 @@ public class Missile extends Thread implements Destructable {
     }
 
     public enum State{
-	LAUNCHING, FLYING
+	LAUNCHING, FLYING , HIT , INTERCEPTED
     }
     
     private static int idGenerator = 100;
@@ -66,13 +66,20 @@ public class Missile extends Thread implements Destructable {
 	try {
 	    state=State.FLYING;
 	    fly();
+	    state=State.HIT;
+	    logHit();
 	} catch (InterruptedException e) {
+	    state=State.INTERCEPTED;
 	}
+    }
+
+    private void logHit() {
+	logger.log(Level.SEVERE, this.id + " has hit " + dest + "!", this);
     }
 
     private void launch() throws InterruptedException {
 	sleep(launchTime);
-	logger.log(Level.WARNING,this + " has launched from " + launcher + "!", this);
+	logger.log(Level.WARNING,this + " has launched from " + launcher + " to " + dest+"!", this);
     }
 
     private void fly() throws InterruptedException {
