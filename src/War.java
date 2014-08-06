@@ -6,13 +6,13 @@ import java.util.Random;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
-import IOPackage.GUI_UI;
+import IOPackage.GUI_IO;
 import IOPackage.IOHandler;
 
 public class War {
 
     public static void main(String[] args) {
-	io = new GUI_UI();
+	io = new GUI_IO();
 	int choice = io.getChoice("War menu", "1) Randomize",
 		"2) Parse from xml");
 	String name = io.getInput("Enter war name:");

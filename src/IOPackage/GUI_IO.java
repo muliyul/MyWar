@@ -2,7 +2,7 @@ package IOPackage;
 import javax.swing.JOptionPane;
 
 
-public class GUI_UI implements IOHandler{
+public class GUI_IO implements IOHandler{
 
     @Override
     public void showMessege(String s) {
