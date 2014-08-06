@@ -12,6 +12,7 @@ public class XMLParser {
     public static War parseWar(String filePath,String name) {
 	List<IronDome> domes = null;
 	List<Launcher> launchers = null;
+	List<Artillery> artillery = null;
 	try {
 	    DocumentBuilderFactory dbFactory = DocumentBuilderFactory
 		    .newInstance();
@@ -19,10 +20,15 @@ public class XMLParser {
 	    Document doc = dBuilder.parse(new File(filePath));
 	    domes=parseDomes(doc.getElementsByTagName("IronDome"));
 	    launchers=parseLaunchers(doc.getElementsByTagName("Launcher"));
+	    artillery=parseArtillery(doc.getElementsByTagName("Destructor"));
 	} catch (Exception e) {
 	}
 	
-	return new War(name, domes, launchers);
+	return new War(name, domes, launchers, artillery);
+    }
+
+    private static List<Artillery> parseArtillery(NodeList elementsByTagName) {
+	return null;
     }
 
     private static List<IronDome> parseDomes(NodeList domelist) {

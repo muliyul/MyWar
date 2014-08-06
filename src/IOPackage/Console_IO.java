@@ -11,7 +11,7 @@ public class Console_IO implements IOHandler {
 
     @Override
     public void showMessege(String s) {
-	out.print(s);
+	out.println(s);
     }
 
     @Override
@@ -43,20 +43,29 @@ public class Console_IO implements IOHandler {
 
     @Override
     public void showMessege(String head, String[] options) {
-	// TODO Auto-generated method stub
-	
+	String raw=""+head;
+	for(int i=0;i<options.length;i++)
+	    raw+=(i+1)+") "+options[i]+'\n';
+	out.println(raw);
     }
 
     @Override
     public int getChoice(String head, String[] options) {
-	// TODO Auto-generated method stub
-	return 0;
+	String raw=""+head;
+	for(int i=0;i<options.length;i++)
+	    raw+=(i+1)+") "+options[i]+'\n';
+	out.println(raw);
+	return in.nextInt();
     }
 
     @Override
-    public boolean yesNo(String string) {
-	// TODO Auto-generated method stub
-	return false;
+    public boolean yesNo(String s) {
+	return getChoice(s,"Yes","No")==1;
+    }
+
+    @Override
+    public void flushBuffers() {
+	out.flush();
     }
 
 

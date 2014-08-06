@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
@@ -37,17 +38,16 @@ public class War {
 	    List<Launcher> launchers = generateRandomLaunchers(warName);
 	    List<IronDome> domes = generateRandomDomes(warName);
 	    List<Artillery> artillery = generateRandomArtillery(warName);
-	    return new War(warName, domes, launchers);
+	    return new War(warName, domes, launchers, artillery);
 	} else {
 	    return XMLParser.parseWar(warName, warName + ".xml");
 	}
     }
 
-
     private static int showWarMenu(IOHandler io) {
 	return io.getChoice("Here comes the menu!", "1) Add Missile",
 		"2) Add Launcher", "3) Add Iron Dome", "4) Add Artillery",
-		"5) End war and show stats");
+		"5) End war and show stats", "6) Start war");
     }
 
     private static void checkDirectorys(String name) {
@@ -58,12 +58,12 @@ public class War {
 	if (!wardir.exists())
 	    wardir.mkdir();
     }
-    
+
     private static List<Artillery> generateRandomArtillery(String warName) {
 	List<Artillery> artillery = new ArrayList<>();
-	for(int i=0;i<2;i++)
+	for (int i = 0; i < 2; i++)
 	    artillery.add(new Artillery(warName));
-	return null;
+	return artillery;
     }
 
     private static List<IronDome> generateRandomDomes(String warName) {
@@ -100,9 +100,11 @@ public class War {
     private Launcher mostSuccessfulLauncher;
     private Artillery mostSuccessfulArtillery;
 
-    public War(String warName, List<IronDome> domes, List<Launcher> launchers) {
+    public War(String warName, List<IronDome> domes, List<Launcher> launchers,
+	    List<Artillery> artillery) {
 	this.domes = domes;
 	this.launchers = launchers;
+	this.artillery = artillery;
 	this.name = warName;
 	this.missilesFired = 0;
 	this.missilesIntercepted = 0;
@@ -124,7 +126,7 @@ public class War {
 	    d.start();
 	for (Launcher l : launchers)
 	    l.start();
-	for(Artillery a : artillery)
+	for (Artillery a : artillery)
 	    a.start();
 	System.out.println(this.name + " is active!\n");
     }
@@ -134,7 +136,7 @@ public class War {
 	    d.Stop();
 	for (Launcher l : launchers)
 	    l.Stop();
-	for(Artillery a : artillery)
+	for (Artillery a : artillery)
 	    a.Stop();
 
     }
@@ -163,14 +165,20 @@ public class War {
 		case 5: {
 		    end();
 		    showStatistics(io);
-		    return false;
+		    return true;
+		}
+		case 6: {
+		    start();
+		    correctInput = true;
+		    break;
 		}
 		}
 	    } catch (IllegalArgumentException e) {
 		correctInput = false;
 	    }
 	} while (!correctInput);
-	return true;
+	io.flushBuffers();
+	return false;
     }
 
     private void addMissile(IOHandler io) {
@@ -198,8 +206,9 @@ public class War {
 	int flyTime = io.getInt("Enter fly time:");
 	if (flyTime <= 0)
 	    throw new IllegalArgumentException("Please enter positive values");
+	int damage = io.getInt("Enter damage:");
 	selectedLauncher.addMissile(new Missile(destinations[destindex],
-		launchTime, flyTime, selectedLauncher));
+		launchTime, flyTime, damage, selectedLauncher));
     }
 
     private void addLauncher(IOHandler io) {
@@ -230,6 +239,18 @@ public class War {
 
     private void showStatistics(IOHandler io) {
 
+	Set<Thread> threads = Thread.getAllStackTraces().keySet();
+	io.showMessege("Waiting for all threads to die for accurate results");
+	io.showMessege(Thread.currentThread()+"");
+	
+	try {
+	    for (Thread t : threads)
+		if(!t.toString().contains("system") && !t.toString().contains("main"))
+		    t.join();
+	} catch (InterruptedException e) {
+	    e.printStackTrace();
+	}
+
 	for (IronDome d : domes) {
 	    missilesIntercepted += d.getMissilesIntercepted();
 	}
@@ -239,16 +260,17 @@ public class War {
 	    if (l.getLState() == Launcher.State.DESTROYED)
 		launchersIntercepted++;
 	}
-	
+
 	io.showMessege(this.toString());
     }
 
     @Override
     public String toString() {
-	return name + " has caused " + totalDamage + WarFormatter.EOL
-		+ "Missiles fired: " + missilesFired + WarFormatter.EOL
-		+ "Missiles intercepted: " + missilesIntercepted
-		+ WarFormatter.EOL + "Launchers intercepted: "
-		+ launchersIntercepted + WarFormatter.EOL;
+	return name + " has caused " + totalDamage + " damage to Israel."
+		+ WarFormatter.EOL + "Missiles fired: " + missilesFired
+		+ WarFormatter.EOL + "Missiles intercepted: "
+		+ missilesIntercepted + WarFormatter.EOL
+		+ "Launchers intercepted: " + launchersIntercepted
+		+ WarFormatter.EOL;
     }
 }

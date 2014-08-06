@@ -75,7 +75,7 @@ public class IronDome {
     }
 
     private void logFailedInterception(Missile m) {
-	logger.log(Level.SEVERE, this + " has failed to intercepted " + m, this);
+	logger.log(Level.SEVERE, this + " has failed to intercept " + m, this);
     }
 
     public void start() {

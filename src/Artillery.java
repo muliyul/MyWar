@@ -67,7 +67,10 @@ public class Artillery extends Thread implements Detector {
     }
 
     private void logFailedInterception(Launcher l, Launcher.State state) {
-	logger.log(Level.WARNING, this + " has failed to intercept " + l + " because its " + state.toString(),this);
+	if(state==Launcher.State.ACTIVE)
+	    logger.log(Level.WARNING, this + " has failed to intercept " + l,this);
+	else
+	    logger.log(Level.WARNING, this + " has failed to intercept " + l  + " because its " + state.toString(),this);
     }
 
     public void Stop() {
@@ -92,5 +95,10 @@ public class Artillery extends Thread implements Detector {
 		}
 	    }
 	}
+    }
+    
+    @Override
+    public String toString() {
+	return id;
     }
 }

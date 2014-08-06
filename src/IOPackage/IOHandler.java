@@ -9,4 +9,5 @@ public interface IOHandler {
     public void showMessege(String head, String[] options);
     public int getChoice(String head, String[] options);
     public boolean yesNo(String string);
+    public void flushBuffers();
 }

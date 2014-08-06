@@ -59,4 +59,8 @@ public class GUI_IO implements IOHandler{
 		null, s, "Confirm dialog", JOptionPane.YES_NO_OPTION);
     }
 
+    @Override
+    public void flushBuffers() {
+    }
+
 }
