@@ -1,4 +1,4 @@
-package Core;
+package war.Core;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,11 +9,11 @@ import java.util.function.Predicate;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
-import IOPackage.Console_IO;
-import IOPackage.GUI_IO;
-import IOPackage.IOHandler;
-import Utils.WarFormatter;
-import Utils.XMLParser;
+import war.IOPackage.Console_IO;
+import war.IOPackage.GUI_IO;
+import war.IOPackage.IOHandler;
+import war.Utils.WarFormatter;
+import war.Utils.XMLParser;
 
 public class War {
 

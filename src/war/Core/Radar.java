@@ -1,4 +1,4 @@
-package Core;
+package war.Core;
 import java.util.Iterator;
 import java.util.Set;
 

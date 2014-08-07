@@ -1,12 +1,12 @@
-package Core;
+package war.Core;
 import java.io.IOException;
 import java.util.Random;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import Utils.ObjectFilter;
-import Utils.WarFormatter;
+import war.Utils.ObjectFilter;
+import war.Utils.WarFormatter;
 
 public class Missile extends Thread implements Destructable {
     public enum Destination {

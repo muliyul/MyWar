@@ -1,4 +1,4 @@
-package Utils;
+package war.Utils;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 

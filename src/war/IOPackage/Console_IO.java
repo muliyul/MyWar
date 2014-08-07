@@ -1,4 +1,4 @@
-package IOPackage;
+package war.IOPackage;
 import java.io.PrintStream;
 import java.util.Scanner;
 

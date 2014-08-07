@@ -1,4 +1,4 @@
-package IOPackage;
+package war.IOPackage;
 import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.util.Vector;

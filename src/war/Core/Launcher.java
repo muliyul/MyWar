@@ -1,4 +1,4 @@
-package Core;
+package war.Core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,8 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import Utils.ObjectFilter;
-import Utils.WarFormatter;
+import war.Utils.ObjectFilter;
+import war.Utils.WarFormatter;
 
 public class Launcher extends Thread implements Destructable {
     public enum State {
