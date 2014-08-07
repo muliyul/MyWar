@@ -1,9 +1,13 @@
+package Core;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import Utils.ObjectFilter;
+import Utils.WarFormatter;
 
 public class Artillery extends Thread implements Detector {
     private static int idGenerator = 100;

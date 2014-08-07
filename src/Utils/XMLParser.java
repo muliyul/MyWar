@@ -1,3 +1,4 @@
+package Utils;
 import java.io.File;
 import java.util.List;
 
@@ -6,6 +7,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+
+import Core.Artillery;
+import Core.IronDome;
+import Core.Launcher;
+import Core.War;
 
 public class XMLParser {
 

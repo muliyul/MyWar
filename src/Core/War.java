@@ -1,3 +1,4 @@
+package Core;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ import java.util.logging.Logger;
 import IOPackage.Console_IO;
 import IOPackage.GUI_IO;
 import IOPackage.IOHandler;
+import Utils.WarFormatter;
+import Utils.XMLParser;
 
 public class War {
 
