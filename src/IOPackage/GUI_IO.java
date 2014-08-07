@@ -1,9 +1,18 @@
 package IOPackage;
+import java.awt.BorderLayout;
+import java.awt.Graphics;
+import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 
 public class GUI_IO implements IOHandler{
-
+    private JFrame progressBar;
+    
     @Override
     public void showMessege(String s) {
 	JOptionPane.showMessageDialog(null, s);
@@ -61,6 +70,44 @@ public class GUI_IO implements IOHandler{
 
     @Override
     public void flushBuffers() {
+    }
+
+    @Override
+    public void showProgressBar(double percent) {
+	SwingUtilities.invokeLater(new Runnable() {
+	    public void run() {
+		if(progressBar==null)
+		    progressBar=getProgressBar(percent);
+		else
+		    updateProgressBar(percent);
+	    }
+	});
+	
+    }
+
+    protected void updateProgressBar(double percent) {
+	progressBar.setTitle(percent+"%");
+	progressBar.paintAll(progressBar.getGraphics());
+	if(percent>=89)
+	    progressBar.dispose();
+    }
+
+    private JFrame getProgressBar(double percent) {
+	JFrame frame=new JFrame(percent+"%");
+	frame.setSize(400, 200);
+	frame.setLocationRelativeTo(null);
+	frame.setLayout(new BorderLayout());
+	JPanel mainPanel=new JPanel(){
+	    protected void paintComponent(Graphics g) {
+	        super.paintComponent(g);
+	        g.drawRect(15, 15, getWidth()-30, getHeight()-30);
+	        g.fillRect(15, 15, (int)((getWidth()-30)*percent), getHeight()-30);
+	    }
+	};
+	frame.add(mainPanel,BorderLayout.CENTER);
+	frame.setVisible(true);
+	frame.toFront();
+	return frame;
     }
 
 }

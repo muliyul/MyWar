@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
@@ -14,7 +15,7 @@ import IOPackage.IOHandler;
 public class War {
 
     public static void main(String[] args) {
-	IOHandler io = new Console_IO();
+	IOHandler io = new GUI_IO();
 	War war = loadMenu(io);
 	int choice;
 	if (war != null) {
@@ -99,6 +100,7 @@ public class War {
     private IronDome mostSuccessfulIronDome;
     private Launcher mostSuccessfulLauncher;
     private Artillery mostSuccessfulArtillery;
+    public static final Object COUNT_LOCK = new Object();
 
     public War(String warName, List<IronDome> domes, List<Launcher> launchers,
 	    List<Artillery> artillery) {
@@ -121,14 +123,14 @@ public class War {
 	}
     }
 
-    private void start() {
+    private void start(IOHandler io) {
 	for (IronDome d : domes)
 	    d.start();
 	for (Launcher l : launchers)
 	    l.start();
 	for (Artillery a : artillery)
 	    a.start();
-	System.out.println(this.name + " is active!\n");
+	io.showMessege(this.name + " is active!\n");
     }
 
     private void end() {
@@ -168,7 +170,7 @@ public class War {
 		    return true;
 		}
 		case 6: {
-		    start();
+		    start(io);
 		    correctInput = true;
 		    break;
 		}
@@ -241,12 +243,21 @@ public class War {
 
 	Set<Thread> threads = Thread.getAllStackTraces().keySet();
 	io.showMessege("Waiting for all threads to die for accurate results");
-	io.showMessege(Thread.currentThread()+"");
-	
+	threads.removeIf(new Predicate<Thread>() {
+	    public boolean test(Thread t) {
+		return t.toString().contains("system")
+			|| t.toString().contains("main");
+	    }
+	});
+
+	double percent = 0;
+	int i = 0;
 	try {
-	    for (Thread t : threads)
-		if(!t.toString().contains("system") && !t.toString().contains("main"))
-		    t.join();
+	    for (Thread t : threads) {
+		t.join();
+		percent = 100 * (i++) / threads.size();
+		io.showProgressBar(percent);
+	    }
 	} catch (InterruptedException e) {
 	    e.printStackTrace();
 	}

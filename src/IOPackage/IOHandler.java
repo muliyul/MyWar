@@ -10,4 +10,5 @@ public interface IOHandler {
     public int getChoice(String head, String[] options);
     public boolean yesNo(String string);
     public void flushBuffers();
+    public void showProgressBar(double percent);
 }

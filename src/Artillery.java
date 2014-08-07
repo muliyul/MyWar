@@ -46,15 +46,14 @@ public class Artillery extends Thread implements Detector {
 
     @Override
     public void onDetect(Object o) {
-	Launcher l=(Launcher)o;
+	Launcher l = (Launcher) o;
 	try {
 	    Thread.sleep((long) (200 + (Math.random() * 15 * 1000)));
-	    if (!l.isAlive() || l.getLState()==Launcher.State.HIDDEN)
-		logFailedInterception(l,l.getLState());
+	    if (!l.isAlive() || l.getLState() == Launcher.State.HIDDEN)
+		logFailedInterception(l, l.getLState());
 	    else {
 		if (l.getLState() == Launcher.State.ACTIVE) {
 		    l.destruct();
-		    launchersIntercepted++;
 		    logInterception(l);
 		}
 	    }
@@ -63,14 +62,19 @@ public class Artillery extends Thread implements Detector {
     }
 
     private void logInterception(Launcher l) {
-	logger.log(Level.INFO, this + " has intercepted " + l,this);
+	logger.log(Level.INFO, this + " has intercepted " + l, this);
+	synchronized (War.COUNT_LOCK) {
+	    launchersIntercepted++;
+	}
     }
 
     private void logFailedInterception(Launcher l, Launcher.State state) {
-	if(state==Launcher.State.ACTIVE)
-	    logger.log(Level.WARNING, this + " has failed to intercept " + l,this);
+	if (state == Launcher.State.ACTIVE)
+	    logger.log(Level.WARNING, this + " has failed to intercept " + l,
+		    this);
 	else
-	    logger.log(Level.WARNING, this + " has failed to intercept " + l  + " because its " + state.toString(),this);
+	    logger.log(Level.WARNING, this + " has failed to intercept " + l
+		    + " because its " + state.toString(), this);
     }
 
     public void Stop() {
@@ -96,7 +100,7 @@ public class Artillery extends Thread implements Detector {
 	    }
 	}
     }
-    
+
     @Override
     public String toString() {
 	return id;

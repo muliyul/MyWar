@@ -68,5 +68,10 @@ public class Console_IO implements IOHandler {
 	out.flush();
     }
 
+    @Override
+    public void showProgressBar(double percent) {
+	showMessege(percent+"%");
+    }
+
 
 }

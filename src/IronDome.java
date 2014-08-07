@@ -14,7 +14,7 @@ public class IronDome {
 	this.id = id;
 	logger = Logger.getLogger(warName);
 	radar = new Radar(this);
-	missilesIntercepted=0;
+	missilesIntercepted = 0;
 	try {
 	    FileHandler fh = new FileHandler("logs/" + warName + "/" + id
 		    + ".log");
@@ -32,7 +32,7 @@ public class IronDome {
 	radar = new Radar(this);
 	logger = Logger.getLogger(warName);
 	id = "IronDome-" + (idGenerator++);
-	missilesIntercepted=0;
+	missilesIntercepted = 0;
 	try {
 	    FileHandler fh = new FileHandler("logs/" + warName + "/" + id
 		    + ".log");
@@ -62,7 +62,6 @@ public class IronDome {
 	    else {
 		if (m.getMState() == Missile.State.FLYING) {
 		    m.destruct();
-		    missilesIntercepted++;
 		    logInterception(m);
 		}
 	    }
@@ -72,6 +71,9 @@ public class IronDome {
 
     private void logInterception(Missile m) {
 	logger.log(Level.INFO, this + " has intercepted " + m, this);
+	synchronized (War.COUNT_LOCK) {
+	    missilesIntercepted++;
+	}
     }
 
     private void logFailedInterception(Missile m) {
