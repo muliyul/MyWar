@@ -1,4 +1,4 @@
-package war.Utils;
+package war.utils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.logging.Formatter;
