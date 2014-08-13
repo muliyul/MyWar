@@ -1,4 +1,4 @@
-package war.IOPackage;
+package war.IO;
 
 public interface IOHandler {
     public void showMessege(String s);

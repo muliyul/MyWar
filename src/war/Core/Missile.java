@@ -1,4 +1,5 @@
 package war.Core;
+
 import java.io.IOException;
 import java.util.Random;
 import java.util.logging.FileHandler;
@@ -9,111 +10,109 @@ import war.Utils.ObjectFilter;
 import war.Utils.WarFormatter;
 
 public class Missile extends Thread implements Destructable {
-    public enum Destination {
-	BEER_SHEVA, ASHDOD, ASHKELON, TEL_AVIV, RAMAT_GAN, KIRYAT_EKRON
-    }
-
-    public enum State {
-	LAUNCHING, FLYING, HIT, INTERCEPTED
-    }
-
-    private static int idGenerator = 100;
-    private State state;
-    private String id;
-    private int damage;
-    private Destination dest;
-    private long launchTime;
-    private long flyTime;
-    private Launcher launcher;
-    private Logger logger;
-
-    public Missile(Destination dest, int launchTime, int flyTime, int damage,
-	    Launcher launcher) {
-	this.dest = dest;
-	this.launchTime = launchTime * 1000;
-	this.flyTime = flyTime * 1000;
-	this.launcher = launcher;
-	this.id = "M-" + (idGenerator++);
-	this.damage = damage;
-    }
-
-    public Missile(String warName) {
-	Destination[] dArr = Destination.values();
-	Random r = new Random();
-	dest = dArr[r.nextInt(dArr.length)];
-	launchTime = 50 + r.nextInt(2 * 1000);
-	flyTime = 15 * 1000 + r.nextInt(15 * 1000);
-	logger = Logger.getLogger(warName);
-	damage = (int) (Math.random() * 10000);
-	id = "M-" + (idGenerator++);
-	try {
-	    FileHandler fh = new FileHandler("logs/" + warName + "/" + id
-		    + ".log");
-	    fh.setFilter(new ObjectFilter(this));
-	    fh.setFormatter(new WarFormatter());
-	    logger.addHandler(fh);
-	} catch (SecurityException e) {
-	    e.printStackTrace();
-	} catch (IOException e) {
-	    e.printStackTrace();
+	public enum State {
+		LAUNCHING, FLYING, HIT, INTERCEPTED
 	}
-    }
 
-    @Override
-    public void run() {
-	try {
-	    synchronized (launcher) {
-		state = State.LAUNCHING;
-		launch();
-	    }
-	} catch (InterruptedException e) {
-	    e.printStackTrace();
-	    return;
+	private static int idGenerator = 100;
+	private State state;
+	private String id;
+	private int damage;
+	private String dest;
+	private long launchTime;
+	private long flyTime;
+	private Launcher launcher;
+	private Logger logger;
+
+	public Missile(String warName, String dest, int launchTime, int flyTime, int damage) {
+		this(warName, "M" + (idGenerator++), dest, launchTime, flyTime, damage);
 	}
-	try {
-	    state = State.FLYING;
-	    fly();
-	    state = State.HIT;
-	    logHit();
-	} catch (InterruptedException e) {
-	    state = State.INTERCEPTED;
+	
+	public Missile(String warName, String id, String dest, int launchTime, int flyTime, int damage) {
+		this.dest = dest;
+		this.launchTime = launchTime * 1000;
+		this.flyTime = flyTime * 1000;
+		this.id = id;
+		this.damage = damage;
+		logger = Logger.getLogger(warName);
+		try {
+			FileHandler fh = new FileHandler("logs/" + warName + "/" + id
+					+ ".log");
+			fh.setFilter(new ObjectFilter(this));
+			fh.setFormatter(new WarFormatter());
+			logger.addHandler(fh);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-    }
 
-    private void logHit() {
-	logger.log(Level.SEVERE, this.id + " has hit " + dest + "!" + "("
-		+ damage + ")", this);
-    }
+	@Override
+	public void run() {
+		try {
+			synchronized (launcher) {
+				state = State.LAUNCHING;
+				launch();
+				if(launcher.getLState()==Launcher.State.HIDDEN){
+					new Thread(){
+						public void run() {
+							launcher.setVisible();
+							sleep(1 + (int)(Math.random()*4));
+							launcher.setHidden();
+						};
+					}.start();
+				}
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return;
+		}
+		try {
+			state = State.FLYING;
+			fly();
+			logHit();
+			state = State.HIT;
+		} catch (InterruptedException e) {
+			state = State.INTERCEPTED;
+		}
+	}
 
-    private void launch() throws InterruptedException {
-	sleep(launchTime);
-	logger.log(Level.WARNING, this + " has been launched from " + launcher
-		+ " to " + dest + "!", this);
-    }
+	private void launch() throws InterruptedException {
+		sleep(launchTime);
+		logger.log(Level.WARNING, this + " has been launched from " + launcher
+				+ " to " + dest + "!", new Object[]{this, launcher});
+		launcher.incrementMissilesFired();
+	}
 
-    private void fly() throws InterruptedException {
-	sleep(flyTime);
-    }
+	private void fly() throws InterruptedException {
+		sleep(flyTime);
+	}
 
-    @Override
-    public void destruct() {
-	interrupt();
-    }
+	private void logHit() {
+		logger.log(Level.SEVERE, this.id + " has hit " + dest + "!" + "("
+				+ damage + ")", this);
+	}
 
-    public String getDestination() {
-	return dest.toString();
-    }
+	@Override
+	public void destruct() {
+		interrupt();
+	}
 
-    public void setLauncher(Launcher launcher) {
-	this.launcher = launcher;
-    }
+	public String getDestination() {
+		return dest;
+	}
 
-    @Override
-    public String toString() {
-	return id;
-    }
+	public void setLauncher(Launcher launcher) {
+		this.launcher = launcher;
+	}
 
-    public State getMState() {
-	return state;
-    }
+	@Override
+	public String toString() {
+		return id;
+	}
+
+	public State getMState() {
+		return state;
+	}
 }
