@@ -2,6 +2,9 @@ package war.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -12,6 +15,7 @@ import java.util.logging.Logger;
 
 import war.io.Console_IO;
 import war.io.IOHandler;
+import war.utils.NoLauncherAvailableException;
 import war.utils.WarFormatter;
 import war.utils.XMLParser;
 
@@ -136,7 +140,7 @@ public class War {
 		    break;
 		}
 		case 3: {
-		    addIronDome(io);
+		    correctInput = addIronDome(io);
 		    break;
 		}
 		case 4: {
@@ -163,16 +167,16 @@ public class War {
 		correctInput = false;
 	    }
 	} while (!correctInput);
-	io.flushBuffers();
 	return false;
     }
 
     private void showInventory(IOHandler io) {
-	io.showMessege(this + " war inventory:");
+	io.showMessege(name + " war inventory:");
 	io.showMessege("Launchers: " + launchers.size());
 	for (Launcher l : launchers) {
-	    io.showMessege(l + ":");
-	    io.showMessege(l.getMissiles().toString());
+	    io.showMessege(l
+		    + (l.getMissiles().size() > 0 ? ": missiles"
+			    + l.getMissiles().toString() : ""));
 	}
 	io.showMessege("Iron Domes: " + domes.size());
 	for (IronDome id : domes) {
@@ -187,34 +191,43 @@ public class War {
     private boolean addMissile(IOHandler io) {
 	Launcher selectedLauncher = null;
 	try {
-	    Launcher[] availableLaunchers = (Launcher[]) launchers.toArray();
-	    String[] availableLaunchersStrings = (String[]) launchers.toArray();
-	    int choice = io.getChoice("Enter launcher to add to:",
-		    availableLaunchersStrings);
-	    if (choice < 0 || choice > availableLaunchers.length)
-		throw new IllegalArgumentException(
-			"Please choose from selected values");
-	    selectedLauncher = availableLaunchers[choice - 1];
-	    String dest = io.getInput("Enter destination:");
-	    int launchTime = io.getInt("Enter launch time:");
-	    if (launchTime < 0)
-		throw new IllegalArgumentException(
-			"Please enter positive values");
-	    int flyTime = io.getInt("Enter fly time:");
-	    if (flyTime <= 0)
-		throw new IllegalArgumentException(
-			"Please enter positive values");
-	    int damage = io.getInt("Enter damage:");
-	    selectedLauncher.addMissile(new Missile(name, dest, launchTime,
-		    flyTime, damage));
+	    String[] availableLaunchersStrings = new String[launchers.size()];
+	    for (int i = 0; i < launchers.size(); i++) {
+		availableLaunchersStrings[i] = launchers.get(i).toString();
+	    }
+	    if (availableLaunchersStrings.length != 0) {
+		int choice = io.getChoice("Enter launcher to add to:",
+			availableLaunchersStrings);
+		if (choice < 0 || choice > availableLaunchersStrings.length)
+		    throw new IllegalArgumentException(
+			    "Please choose from selected values");
+		selectedLauncher = launchers.get(choice - 1);
+		io.flushBuffers();
+		String dest = io.getInput("Enter destination:");
+		int launchTime = io.getInt("Enter launch time:");
+		if (launchTime < 0)
+		    throw new IllegalArgumentException(
+			    "Please enter positive values");
+		int flyTime = io.getInt("Enter fly time:");
+		if (flyTime <= 0)
+		    throw new IllegalArgumentException(
+			    "Please enter positive values");
+		int damage = io.getInt("Enter damage:");
+		selectedLauncher.addMissile(new Missile(name, dest, launchTime,
+			flyTime, damage));
+	    } else
+		throw new NoLauncherAvailableException();
 	    return true;
-	} catch (Exception e) {
+	} catch (NoLauncherAvailableException e) {
+	    io.showError("No launchers available!\nPlease add one first");
+	    return true;
+	} catch (IllegalArgumentException e) {
 	    return false;
 	}
-
     }
 
     private boolean addLauncher(IOHandler io) {
+	io.flushBuffers();
 	try {
 	    String id = io.getInput("Enter id:");
 	    Launcher.State[] states = { Launcher.State.ACTIVE,
@@ -236,24 +249,45 @@ public class War {
 	}
     }
 
-    private void addIronDome(IOHandler io) {
+    private boolean addIronDome(IOHandler io) {
+	io.flushBuffers();
 	String id = io.getInput("Enter id:");
 	domes.add(new IronDome(name, id));
+	return true;
     }
 
     private boolean addArtillery(IOHandler io) {
+	io.flushBuffers();
 	String id = io.getInput("Enter id:");
+	Artillery a;
 	Artillery.Type[] typeList = Artillery.Type.values();
-	List<String> typeListStrings = new Vector<>();
+	String[] typeListStrings = new String[typeList.length];
+	String[] targetsAvailable = new String[launchers.size()];
+	boolean finishedTargets = false;
+	int choice;
+	int destroyTime;
 	for (int i = 0; i < typeList.length; i++) {
-	    typeListStrings.add(typeList[i].toString());
+	    typeListStrings[i] = typeList[i].toString();
 	}
-	int choice = io.getChoice((String[]) typeListStrings.toArray());
+	choice = io.getChoice("Select type:", typeListStrings);
 	try {
-	    artillery.add(new Artillery(name, id, typeList[choice]));
+	    a = new Artillery(name, id, typeList[choice]);
+	    for (int i = 0; i < targetsAvailable.length; i++) {
+		
+	    }
+	    do {
+		choice = io.getChoice("Add target:", targetsAvailable);
+		destroyTime = io.getInt("Enter destroy time");
+		if (destroyTime < 0)
+		    throw new IllegalArgumentException();
+		a.addTarget(new Target(launchers.get(choice - 1), destroyTime,
+			a));
+		finishedTargets = io.yesNo("Add more targets?");
+	    } while (!finishedTargets);
 	} catch (Exception e) {
 	    return false;
 	}
+	artillery.add(a);
 	return true;
     }
 
@@ -303,6 +337,7 @@ public class War {
 		mostSuccessfulLauncher = launchers.get(i);
 	    if (launchers.get(i).getLState() == Launcher.State.DESTROYED)
 		launchersIntercepted++;
+	    totalDamage += launchers.get(i).getTotalDamage();
 	}
 
 	for (i = 0; i < artillerySize; i++) {
@@ -317,11 +352,32 @@ public class War {
 
     @Override
     public String toString() {
-	return name + " has caused " + totalDamage + " damage to Israel."
-		+ WarFormatter.EOL + "Missiles fired: " + missilesFired
-		+ WarFormatter.EOL + "Missiles intercepted: "
-		+ missilesIntercepted + WarFormatter.EOL
-		+ "Launchers intercepted: " + launchersIntercepted
-		+ WarFormatter.EOL;
+	try {
+	    return name + " has caused " + totalDamage + " damage to Israel."
+		    + WarFormatter.EOL + "Missiles fired: " + missilesFired
+		    + WarFormatter.EOL + "Missiles intercepted: "
+		    + missilesIntercepted + WarFormatter.EOL
+		    + "Launchers intercepted: " + launchersIntercepted
+		    + WarFormatter.EOL + "Most Successful Iron Dome: "
+		    + mostSuccessfulIronDome + WarFormatter.EOL
+		    + "Missiles intercepted: "
+		    + mostSuccessfulIronDome.getMissilesIntercepted()
+		    + WarFormatter.EOL + "Most Successful Artillery: "
+		    + mostSuccessfulArtillery + WarFormatter.EOL
+		    + "Launchers destroyed: "
+		    + mostSuccessfulArtillery.getLaunchersIntercepted()
+		    + WarFormatter.EOL + "Most Successful Launcher: "
+		    + mostSuccessfulLauncher + WarFormatter.EOL
+		    + "Missiles fired: "
+		    + mostSuccessfulLauncher.getMissilesFired()
+		    + WarFormatter.EOL + "Damage done: "
+		    + mostSuccessfulLauncher.getTotalDamage();
+	} catch (NullPointerException e) {
+	    return name + " has caused " + totalDamage + " damage to Israel."
+		    + WarFormatter.EOL + "Missiles fired: " + missilesFired
+		    + WarFormatter.EOL + "Missiles intercepted: "
+		    + missilesIntercepted + WarFormatter.EOL
+		    + "Launchers intercepted: " + launchersIntercepted;
+	}
     }
 }

@@ -7,6 +7,7 @@ public interface IOHandler {
     public int getInt(String s);
     public int getChoice(String... strings);
     public void showMessege(String head, String[] options);
+    public void showError(String s);
     public int getChoice(String head, String[] options);
     public boolean yesNo(String string);
     public void flushBuffers();

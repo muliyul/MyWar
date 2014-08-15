@@ -110,4 +110,9 @@ public class GUI_IO implements IOHandler{
 	return frame;
     }
 
+    @Override
+    public void showError(String s) {
+	JOptionPane.showMessageDialog(null, s, "Error" , JOptionPane.INFORMATION_MESSAGE);
+    }
+
 }
