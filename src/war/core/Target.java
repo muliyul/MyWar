@@ -3,6 +3,11 @@ package war.core;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import war.core.enemy.Launcher;
+import war.core.enemy.Missile;
+import war.core.friendly.Artillery;
+import war.core.friendly.IronDome;
+
 public class Target {
     private static Logger logger = Logger.getLogger("WarLogger");
     private Thread target;

@@ -13,6 +13,10 @@ import java.util.function.Predicate;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
+import war.core.enemy.Launcher;
+import war.core.enemy.Missile;
+import war.core.friendly.Artillery;
+import war.core.friendly.IronDome;
 import war.io.Console_IO;
 import war.io.IOHandler;
 import war.utils.NoLauncherAvailableException;
@@ -204,16 +208,12 @@ public class War {
 		selectedLauncher = launchers.get(choice - 1);
 		io.flushBuffers();
 		String dest = io.getInput("Enter destination:");
-		int launchTime = io.getInt("Enter launch time:");
-		if (launchTime < 0)
-		    throw new IllegalArgumentException(
-			    "Please enter positive values");
 		int flyTime = io.getInt("Enter fly time:");
 		if (flyTime <= 0)
 		    throw new IllegalArgumentException(
 			    "Please enter positive values");
 		int damage = io.getInt("Enter damage:");
-		selectedLauncher.addMissile(new Missile(name, dest, launchTime,
+		selectedLauncher.addMissile(new Missile(name, dest, 0,
 			flyTime, damage));
 	    } else
 		throw new NoLauncherAvailableException();

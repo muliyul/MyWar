@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Semaphore;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -15,12 +16,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import war.core.Artillery;
-import war.core.IronDome;
-import war.core.Launcher;
-import war.core.Missile;
 import war.core.Target;
 import war.core.War;
+import war.core.enemy.Launcher;
+import war.core.enemy.Missile;
+import war.core.friendly.Artillery;
+import war.core.friendly.IronDome;
 
 public class XMLParser {
 
@@ -61,13 +62,13 @@ public class XMLParser {
 			Launcher ml = new Launcher(warName,
 					isHidden ? Launcher.State.HIDDEN : Launcher.State.ACTIVE);
 			NodeList missilelist = l.getElementsByTagName("missile");
-			ml.setMissiles(readMissiles(warName,missilelist));
+			ml.setMissiles(readMissiles(warName,missilelist, ml.getLaunchpad()));
 			v.add(ml);
 		}
 		return v;
 	}
 
-	private static List<Missile> readMissiles(String warName, NodeList missilelist) {
+	private static List<Missile> readMissiles(String warName, NodeList missilelist, Semaphore launchpad) {
 		Vector<Missile> v = new Vector<>();
 		int numberOfMissiles = missilelist.getLength();
 		for (int j = 0; j < numberOfMissiles; j++) {
@@ -77,7 +78,9 @@ public class XMLParser {
 			int launchTime = Integer.valueOf(m.getAttribute("launchTime"));
 			int flyTime = Integer.valueOf(m.getAttribute("flyTime"));
 			int damage = Integer.valueOf(m.getAttribute("damage"));
-			v.add(new Missile(warName, id, destination, launchTime, flyTime, damage));
+			Missile mis;
+			v.add(mis = new Missile(warName, id, destination, launchTime, flyTime, damage));
+			mis.setLaunchpad(launchpad);
 		}
 		return v;
 	}
