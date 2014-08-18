@@ -2,17 +2,16 @@ package war.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 import java.util.function.Predicate;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
 import war.core.enemy.Launcher;
 import war.core.enemy.Missile;
 import war.core.friendly.Artillery;
@@ -38,12 +37,17 @@ public class War {
 	}
     }
 
+    /**
+     * Shows up a load war menu.
+     * @param io - Object that implements IOHandler.
+     * @return new initialized war object or null of an error occurred.
+     */
     private static War loadMenu(IOHandler io) {
 	String warName = io.getInput("Enter war name:");
 	int choice = -1;
 	do {
-	    choice = io.getChoice("War menu", "1) Enter manually",
-		    "2) Parse from XML");
+	    choice = io.getChoice("War menu", new String[]{"Enter manually",
+		    "Parse from XML"});
 	} while (choice != 1 && choice != 2);
 	checkDirectorys(warName);
 	if (choice == 1) {
@@ -54,18 +58,16 @@ public class War {
 	    return null;
     }
 
-    private int showWarMenu(IOHandler io) {
-	return io.getChoice("Here comes the menu!", "1) Add Missile",
-		"2) Add Launcher", "3) Add Iron Dome", "4) Add Artillery",
-		"5) Show Inventory", isActive ? "6) End war and show stats"
-			: "6) Start war");
-    }
-
-    private static void checkDirectorys(String name) {
+    /**
+     * Checks if the directory tree for log files exists, if not - creates them as following:
+     * ../logs/warName/
+     * @param warName - war's name.
+     */
+    private static void checkDirectorys(String warName) {
 	File logdir = new File("logs");
 	if (!logdir.exists())
 	    logdir.mkdir();
-	File wardir = new File("logs/" + name);
+	File wardir = new File("logs/" + warName);
 	if (!wardir.exists())
 	    wardir.mkdir();
     }
@@ -87,7 +89,14 @@ public class War {
     public War(String warName) {
 	this(warName, new Vector<>(), new Vector<>(), new Vector<>());
     }
-
+    
+    /**
+     * 
+     * @param warName - The name for the war.
+     * @param domes - List of iron domes.
+     * @param launchers - List of launchers.
+     * @param artillery - List of artillery.
+     */
     public War(String warName, List<IronDome> domes, List<Launcher> launchers,
 	    List<Artillery> artillery) {
 	this.isActive = false;
@@ -110,6 +119,22 @@ public class War {
 	}
     }
 
+    /**
+     * Shows the specific war's menu.
+     * @param io - Object that implements IOHandler.
+     * @return An integer containing the selection.
+     */
+    private int showWarMenu(IOHandler io) {
+        return io.getChoice("Here comes the menu!", new String[]{"Add Missile",
+        	"Add Launcher", "Add Iron Dome", "Add Artillery",
+        	"Show Inventory", isActive ? "End war and show stats"
+        		: "Start war"});
+    }
+
+    /**
+     * Initiates the war starting all cached threads.
+     * @param io - Object that implements IOHandler.
+     */
     private void start(IOHandler io) {
 	for (IronDome d : domes)
 	    d.start();
@@ -120,6 +145,10 @@ public class War {
 	io.showMessege(this.name + " is active!\n");
     }
 
+    /**
+     * Terminates all the ongoing threads (besides missiles).
+     * In other words - stops launching and intercepting.
+     */
     private void end() {
 	for (IronDome d : domes)
 	    d.Stop();
@@ -130,6 +159,12 @@ public class War {
 
     }
 
+    /**
+     * Invokes methods regarding user's choice.
+     * @param choice - The index of the chosen option.
+     * @param io - Object that implements IOHandler.
+     * @return boolean containing the user's willingness to keep the war running.
+     */
     private boolean invokeChoice(int choice, IOHandler io) {
 	boolean correctInput = false;
 	do {
@@ -174,6 +209,10 @@ public class War {
 	return false;
     }
 
+    /**
+     * Shows current war object's inventory (Launchers and their missiles, Iron domes and artillery).
+     * @param io - Object that implements IOHandler. 
+     */
     private void showInventory(IOHandler io) {
 	io.showMessege(name + " war inventory:");
 	io.showMessege("Launchers: " + launchers.size());
@@ -192,6 +231,11 @@ public class War {
 	}
     }
 
+    /**
+     * Prompts a user for adding a missile and receiving the input.
+     * @param io - Object that implements IOHandler.
+     * @return boolean regarding the correctness of the input.
+     */
     private boolean addMissile(IOHandler io) {
 	Launcher selectedLauncher = null;
 	try {
@@ -213,8 +257,8 @@ public class War {
 		    throw new IllegalArgumentException(
 			    "Please enter positive values");
 		int damage = io.getInt("Enter damage:");
-		selectedLauncher.addMissile(new Missile(name, dest, 0,
-			flyTime, damage));
+		selectedLauncher.addMissile(new Missile(name, dest, 0, flyTime,
+			damage));
 	    } else
 		throw new NoLauncherAvailableException();
 	    return true;
@@ -225,7 +269,12 @@ public class War {
 	    return false;
 	}
     }
-
+    
+    /**
+     * Prompts a user for adding a launcher and receiving the input.
+     * @param io - Object that implements IOHandler.
+     * @return boolean regarding the correctness of the input.
+     */
     private boolean addLauncher(IOHandler io) {
 	io.flushBuffers();
 	try {
@@ -248,15 +297,30 @@ public class War {
 	    return false;
 	}
     }
-
+    
+    /**
+     * Prompts a user for adding an Iron-Dome and receiving the input.
+     * @param io - Object that implements IOHandler.
+     * @return boolean regarding the correctness of the input.
+     */
     private boolean addIronDome(IOHandler io) {
 	io.flushBuffers();
 	String id = io.getInput("Enter id:");
 	domes.add(new IronDome(name, id));
 	return true;
     }
-
+    
+    /**
+     * Prompts a user for adding an Artillery and receiving the input.
+     * @param io - Object that implements IOHandler.
+     * @return boolean regarding the correctness of the input.
+     */
     private boolean addArtillery(IOHandler io) {
+//	Media artmp3 = new Media("art.mp3");
+//	MediaPlayer mp = new MediaPlayer(artmp3);
+//	mp.setCycleCount(MediaPlayer.INDEFINITE);
+//	mp.setStopTime(Duration.seconds(7));
+//	mp.play();
 	io.flushBuffers();
 	String id = io.getInput("Enter id:");
 	Artillery a;
@@ -273,24 +337,29 @@ public class War {
 	try {
 	    a = new Artillery(name, id, typeList[choice]);
 	    for (int i = 0; i < targetsAvailable.length; i++) {
-		
+		targetsAvailable[i] = launchers.get(i).toString();
 	    }
 	    do {
 		choice = io.getChoice("Add target:", targetsAvailable);
-		destroyTime = io.getInt("Enter destroy time");
+		destroyTime = io.getInt("Enter destroy time:");
 		if (destroyTime < 0)
 		    throw new IllegalArgumentException();
 		a.addTarget(new Target(launchers.get(choice - 1), destroyTime,
 			a));
 		finishedTargets = io.yesNo("Add more targets?");
-	    } while (!finishedTargets);
+	    } while (finishedTargets);
 	} catch (Exception e) {
 	    return false;
 	}
 	artillery.add(a);
+//	mp.stop();
 	return true;
     }
-
+    
+    /**
+     * Shows the statistics for current war object
+     * @param io - Object that implements IOHandler.
+     */
     private void showStatistics(IOHandler io) {
 	double percent = 0;
 	int i = 0;
@@ -305,6 +374,7 @@ public class War {
 	if (artillerySize > 0)
 	    mostSuccessfulArtillery = artillery.get(0);
 
+	//TODO Can create problem simulating multiple wars.
 	io.showMessege("Waiting for all threads to die for accurate results",
 		"This may take a while");
 	threads.removeIf(new Predicate<Thread>() {

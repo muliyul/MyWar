@@ -27,11 +27,28 @@ public class Missile extends Thread implements Destructable {
     private Logger logger;
     private Semaphore launchpad;
 
+    /**
+     * 
+     * @param warName - War's name for logging purpose.
+     * @param dest - Destination in string format.
+     * @param launchTime - The time to countdown before launch (in seconds).
+     * @param flyTime - The time of flight (in seconds)
+     * @param damage - The damage the missile will deal if it hits the target.
+     */
     public Missile(String warName, String dest, int launchTime, int flyTime,
 	    int damage) {
 	this(warName, "M" + (idGenerator++), dest, launchTime, flyTime, damage);
     }
 
+    /**
+     * 
+     * @param warName - War's name for logging purpose.
+     * @param id - The missile's ID.
+     * @param dest - Destination in string format.
+     * @param launchTime - The time to countdown before launch (in seconds).
+     * @param flyTime - The time of flight (in seconds)
+     * @param damage - The damage the missile will deal if it hits the target.
+     */
     public Missile(String warName, String id, String dest, int launchTime,
 	    int flyTime, int damage) {
 	this.dest = dest;
@@ -56,16 +73,16 @@ public class Missile extends Thread implements Destructable {
     @Override
     public void run() {
 	try {
-	    launchpad.acquire();
+	    launchpad.acquire(); //Acquire launching permission from launcher
 	    state = State.LAUNCHING;
 	    launch();
-	    launchpad.release();
+	    launchpad.release(); //Release launchpad for next missile.
 	    if (launcher.getLState() == Launcher.State.HIDDEN) {
-		new Thread() {
+		new Thread() { //New thread for changing launcher's state.
 		    public void run() {
 			launcher.setVisible();
 			try {
-			    sleep(1 + (int) (Math.random() * 4));
+			    sleep(1 + (int) (Math.random() * 4)); //Set visible for random amount of time (1-4 seconds)
 			} catch (InterruptedException e) {
 			    e.printStackTrace();
 			}
@@ -122,6 +139,10 @@ public class Missile extends Thread implements Destructable {
 	return id;
     }
 
+    /**
+     * 
+     * @return The missile's current state
+     */
     public State getMState() {
 	return state;
     }

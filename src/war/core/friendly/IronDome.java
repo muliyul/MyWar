@@ -19,6 +19,11 @@ public class IronDome extends Thread{
 	private List<Target> targets;
 	private boolean isRunning;
 
+	/**
+	 * 
+	 * @param warName - The war's name (for logging purposes).
+	 * @param id - The Iron-Dome's ID.
+	 */
 	public IronDome(String warName, String id) {
 		this.id = id;
 		this.logger = Logger.getLogger(warName);
@@ -38,6 +43,10 @@ public class IronDome extends Thread{
 		}
 	}
 
+	/**
+	 * 
+	 * @param warName - The war's name (for logging purposes).
+	 */
 	public IronDome(String warName) {
 		this(warName,"IronDome" + (idGenerator++));
 	}
@@ -60,6 +69,7 @@ public class IronDome extends Thread{
 		return missilesIntercepted;
 	}
 
+	
 	public synchronized void assignTarget(Target target) {
 		targets.add(target);
 	}

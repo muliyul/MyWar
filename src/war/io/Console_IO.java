@@ -16,13 +16,13 @@ public class Console_IO implements IOHandler {
 
     @Override
     public String getInput(String s) {
-	out.println(s);
+	out.print(s + " ");
 	return in.nextLine();
     }
 
     @Override
     public int getInt(String s) {
-	out.println(s);
+	out.print(s + " ");
 	return in.nextInt();
     }
 
@@ -30,21 +30,15 @@ public class Console_IO implements IOHandler {
     public void showMessege(String... strings) {
 	String raw = "";
 	for (int i = 0; i < strings.length; i++)
-	    raw += strings[i] + '\n';
+	    raw += strings[i] + WarFormatter.EOL;
 	out.println(raw);
     }
 
     @Override
-    public int getChoice(String... strings) {
-	showMessege(strings);
-	return in.nextInt();
-    }
-
-    @Override
     public void showMessege(String head, String[] options) {
-	String raw = "" + head + '\n';
+	String raw = "" + head + WarFormatter.EOL;
 	for (int i = 0; i < options.length; i++)
-	    raw += (i + 1) + ") " + options[i] + '\n';
+	    raw += (i + 1) + ") " + options[i] + WarFormatter.EOL;
 	out.println(raw);
     }
 
@@ -52,7 +46,7 @@ public class Console_IO implements IOHandler {
     public int getChoice(String head, String[] options) {
 	String raw = "" + head + WarFormatter.EOL;
 	for (int i = 0; i < options.length; i++)
-	    raw += (i + 1) + ") " + options[i] + '\n';
+	    raw += (i + 1) + ") " + options[i] + WarFormatter.EOL;
 	out.println(raw);
 	return in.nextInt();
     }

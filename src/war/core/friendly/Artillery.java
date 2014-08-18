@@ -22,6 +22,12 @@ public class Artillery extends Thread {
     private Vector<Target> targets;
     private int launchersIntercepted;
 
+    /**
+     * 
+     * @param warName - The war's name (for logging purposes).
+     * @param id - The artillery's ID.
+     * @param type - The artillery's type.
+     */
     public Artillery(String warName, String id, Type type) {
 	this.id = id;
 	this.logger = Logger.getLogger(warName);
@@ -40,11 +46,19 @@ public class Artillery extends Thread {
 	    e.printStackTrace();
 	}
     }
-
+    
+    /**
+     * 
+     * @param warName - The war's name (for logging purposes).
+     * @param type - The artillery's type.
+     */
     public Artillery(String warName, Type type) {
 	this(warName, "A-" + (idGenerator++), type);
     }
 
+    /**
+     * Terminate the thread.
+     */
     public void Stop() {
 	isRunning = false;
     }
@@ -63,6 +77,10 @@ public class Artillery extends Thread {
 	return id;
     }
 
+    /**
+     * Adds a target to the artillery. Thread-safe.
+     * @param t - The target.
+     */
     public synchronized void addTarget(Target t) {
 	targets.add(t);
     }
@@ -71,6 +89,9 @@ public class Artillery extends Thread {
 	return type;
     }
 
+    /**
+     * Increments the number of launchers Intercepted by this artillery.
+     */
     public synchronized void incrementLaunchersIntercepted() {
 	launchersIntercepted++;
     }

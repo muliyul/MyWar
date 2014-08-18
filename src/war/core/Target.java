@@ -14,18 +14,32 @@ public class Target {
     private Object origin;
     private int interceptionTime;
 
+    /**
+     * 
+     * @param m - Missile to target
+     * @param interceptionTime - Time to destroy missile
+     * @param ironD - Iron-Dome in charge of interception
+     */
     public Target(Missile m, int interceptionTime, IronDome ironD) {
 	this.target = m;
 	this.origin = ironD;
 	this.interceptionTime = interceptionTime;
     }
-
+    /**
+     * 
+     * @param ml - Launcher to target
+     * @param interceptionTime - Time to destroy launcher
+     * @param ironD - Artillery in charge of interception
+     */
     public Target(Launcher ml, int destroyTime, Artillery ld) {
 	this.target = ml;
 	this.origin = ld;
 	this.interceptionTime = destroyTime;
     }
-
+    
+    /**
+     * Intercepts a missile or a launcher.
+     */
     public void intercept() {
 	if (target instanceof Missile) {
 	    try {
@@ -52,7 +66,7 @@ public class Target {
 	    }
 	    synchronized (origin) {
 		if (ml.getLState() == Launcher.State.ACTIVE) {
-		    ml.intercept();
+		    ml.destruct();
 		    logInterception();
 		} else {
 		    logFailedInterception();
@@ -61,7 +75,10 @@ public class Target {
 	}
 
     }
-
+    
+    /**
+     * Logs an attempt to intercept missile or launcher.
+     */
     private void logInterceptionTry() {
 	if (target instanceof Missile) {
 	    IronDome i = ((IronDome) origin);
@@ -74,6 +91,9 @@ public class Target {
 	}
     }
 
+    /**
+     * Logs an interception of a missile or a launcher.
+     */
     private void logInterception() {
 	if (target instanceof Missile) {
 	    IronDome i = ((IronDome) origin);
@@ -88,6 +108,9 @@ public class Target {
 	}
     }
 
+    /**
+     * Logs a failed interception of a missile or a launcher.
+     */
     private void logFailedInterception() {
 	if (target instanceof Missile) {
 	    Missile m = ((Missile) target);
@@ -100,7 +123,6 @@ public class Target {
 		    + ((Launcher) target), origin);
 	}
     }
-
     public int getInterceptionTime() {
 	return interceptionTime;
     }
@@ -109,10 +131,13 @@ public class Target {
 	return target;
     }
 
+    /**
+     * For debugging purposes.
+     */
     @Override
     public String toString() {
 	return "Target [target=" + target + ", interceptionTime="
-		+ interceptionTime + "]";
+		+ interceptionTime + ", origin=" + origin + "]";
     }
 
 }

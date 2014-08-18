@@ -25,6 +25,12 @@ import war.core.friendly.IronDome;
 
 public class XMLParser {
 
+    	/**
+    	 * Parses an entire war from XML configuration file.
+    	 * @param name - The war's name.
+    	 * @param filePath - The XML's full file path.
+    	 * @return
+    	 */
 	public static War parseWar(String name, String filePath) {
 		List<IronDome> domes = null;
 		List<Launcher> launchers = null;
@@ -49,6 +55,12 @@ public class XMLParser {
 		return new War(name, domes, launchers, artillery);
 	}
 
+	/**
+	 * Parses all the launchers in the given XML nodelist.
+	 * @param warName - The war's name.
+	 * @param launcherslist - Nodelist containing "launcher" tags.
+	 * @return List of launchers.
+	 */
 	private static List<Launcher> parseLaunchers(String warName,
 			NodeList launcherslist) {
 		Vector<Launcher> v = new Vector<>();
@@ -67,7 +79,14 @@ public class XMLParser {
 		}
 		return v;
 	}
-
+	
+	/**
+	 * Parses the missiles in the given XML nodelist.
+	 * @param warName - The war's name.
+	 * @param missilelist - Nodelist containing "missile" tags.
+	 * @param launchpad - The launcher's launchpad associated with all the missiles.
+	 * @return List of missiles.
+	 */
 	private static List<Missile> readMissiles(String warName, NodeList missilelist, Semaphore launchpad) {
 		Vector<Missile> v = new Vector<>();
 		int numberOfMissiles = missilelist.getLength();
@@ -85,6 +104,13 @@ public class XMLParser {
 		return v;
 	}
 
+	/**
+	 * Parses all the Iron-Domes in the given XML nodelist.
+	 * @param warName - The war's name.
+	 * @param domelist - Nodelist containing "missileDestructor" tags.
+	 * @param launchers - The launchers, to assign missile targets.
+	 * @return List of Iron-Domes.
+	 */
 	private static List<IronDome> parseDomes(String warName, NodeList domelist,
 			List<Launcher> launchers) {
 		Vector<IronDome> v = new Vector<>();
@@ -117,6 +143,12 @@ public class XMLParser {
 		return v;
 	}
 
+	/**
+	 * Finds a missile's reference by matching id's.
+	 * @param id - The id of the missile to look up.
+	 * @param launchers - List of launchers containing missiles.
+	 * @return The missile, if found. Null otherwise.
+	 */
 	private static Missile findMissile(String id, List<Launcher> launchers) {
 		for (Launcher l : launchers) {
 			List<Missile> missiles = l.getMissiles();
@@ -128,7 +160,14 @@ public class XMLParser {
 		}
 		return null;
 	}
-
+	
+	/**
+	 * Parses all the Artillery in the given XML nodelist.
+	 * @param warName - The war's name.
+	 * @param artillerylist - Nodelist containing "missileLauncherDestructor" tags.
+	 * @param launchers - The launchers, to assign launcher targets.
+	 * @return List of Iron-Domes.
+	 */
 	private static List<Artillery> parseArtillery(String warName,
 			NodeList artillerylist, List<Launcher> launchers) {
 		Vector<Artillery> artillery = new Vector<>();
@@ -163,6 +202,12 @@ public class XMLParser {
 		return artillery;
 	}
 
+	/**
+	 * Finds a launcher's reference by matching id's.
+	 * @param id - The id of the missile to look up.
+	 * @param launchers - List of launchers.
+	 * @return The launcher, if found. Null otherwise.
+	 */
 	private static Launcher findLauncher(String targetId,
 			List<Launcher> launchers) {
 		for (Launcher l : launchers) {

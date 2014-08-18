@@ -37,14 +37,6 @@ public class GUI_IO implements IOHandler{
     }
 
     @Override
-    public int getChoice(String... strings) {
-	String raw="";
-	for(int i=0;i<strings.length;i++)
-	    raw+=strings[i]+'\n';
-	return Integer.parseInt(JOptionPane.showInputDialog(null, raw));
-    }
-
-    @Override
     public void showMessege(String head, String[] options) {
 	String raw="";
 	raw+=head;

@@ -26,12 +26,18 @@ public class Launcher extends Thread implements Destructable {
     private int totalDamage;
     private Semaphore launchpad;
 
+    /**
+     * 
+     * @param warName - Name of war (for logging purposes).
+     * @param id - The id of the launcher.
+     * @param state - The state of the launcher (DESTROYED is possible but has no use).
+     */
     public Launcher(String warName, String id, State state) {
 	this.missiles = new Vector<>();
 	this.state = state;
 	this.id = id;
 	this.missilesFired = 0;
-	this.launchpad = new Semaphore(1);
+	this.launchpad = new Semaphore(1,true);
 	try {
 	    this.logger = Logger.getLogger(warName + "");
 	    FileHandler fh = new FileHandler("logs/" + warName + "/" + id
@@ -44,10 +50,19 @@ public class Launcher extends Thread implements Destructable {
 	}
     }
 
+    /**
+     * 
+     * @param warName - Name of war (for logging purposes).
+     * @param state - The state of the launcher (DESTROYED is possible but has no use).
+     */
     public Launcher(String warName, State state) {
 	this(warName, "L" + (idGenerator++), state);
     }
 
+    /**
+     * Adds a missile to the launcher. Thread-safe method.
+     * @param m - Missile to add.
+     */
     public synchronized void addMissile(Missile m) {
 	missiles.add(m);
 	m.setLauncher(this);
@@ -55,37 +70,48 @@ public class Launcher extends Thread implements Destructable {
     }
 
     @Override
-    public void destruct() {
-	interrupt();
-    }
-
-    @Override
     public void run() {
 	isRunning = true;
 	while (isRunning) {
-	    synchronized (this) {
-		if (missiles.size() > 0) {
-		    missiles.remove(0).start();
+	    if (missiles.size() > 0) {
+		for(int i = 0 ; i < missiles.size() ; i++){
+		    if(!missiles.get(i).isAlive())
+			missiles.get(i).start();
 		}
 	    }
 	}
     }
-
+    
+    /**
+     * Increase the number of missiles fired so far. Thread-safe.
+     */
     protected synchronized void incrementMissilesFired() {
 	missilesFired++;
     }
-
+    
+    /**
+     * 
+     * @return List of the missiles.
+     */
     public List<Missile> getMissiles() {
 	return missiles;
     }
 
+    /**
+     * Sets the list of the missiles to be used.
+     * @param missiles
+     */
     public void setMissiles(List<Missile> missiles) {
 	this.missiles = missiles;
 	for (Missile m : missiles) {
 	    m.setLauncher(this);
+	    m.setLaunchpad(launchpad);
 	}
     }
-
+    
+    /**
+     * Terminates the thread.
+     */
     public void Stop() {
 	isRunning = false;
     }
@@ -95,6 +121,10 @@ public class Launcher extends Thread implements Destructable {
 	return this.id;
     }
 
+    /**
+     * 
+     * @return Launcher's state.
+     */
     public State getLState() {
 	return state;
     }
@@ -103,6 +133,10 @@ public class Launcher extends Thread implements Destructable {
 	return missilesFired;
     }
 
+    /**
+     * Adds damage to the total damage dealt by this launcher.
+     * @param damage
+     */
     public synchronized void addDamage(int damage) {
 	this.totalDamage += damage;
     }
@@ -111,19 +145,32 @@ public class Launcher extends Thread implements Destructable {
 	return totalDamage;
     }
 
-    public void intercept() {
-	Stop();
+    /**
+     * Interrupts the launcher,
+     */
+    public void destruct() {
+	interrupt();
 	state = State.DESTROYED;
     }
 
+    /**
+     * Sets the launcher's state to visible/active.
+     */
     protected synchronized void setVisible() {
 	state = State.ACTIVE;
     }
 
+    /**
+     * Sets the launcher's state to hidden.
+     */
     protected synchronized void setHidden() {
 	state = State.HIDDEN;
     }
 
+    /**
+     * Removes the missile from the missiles list.
+     * @param missile
+     */
     protected synchronized void remove(Missile missile) {
 	missiles.remove(missile);
     }
