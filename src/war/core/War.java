@@ -86,9 +86,9 @@ public class War {
     private Launcher mostSuccessfulLauncher;
     private Artillery mostSuccessfulArtillery;
 
-    public War(String warName) {
-	this(warName, new Vector<>(), new Vector<>(), new Vector<>());
-    }
+   public War(String warName) {
+//	   (warName, new List<IronDome>(), new List<Launcher>(), new List<Artillery>());
+   }
     
     /**
      * 
@@ -289,7 +289,7 @@ public class War {
 	    if (stateindex < 0 || stateindex > states.length)
 		throw new IllegalArgumentException(
 			"Please choose from selected values");
-	    launchers.add(new Launcher(name, id, states[stateindex]));
+	    launchers.add(new Launcher(name, id, states[stateindex-1]));
 	    if (io.yesNo("Do you wish to add missiles?"))
 		addMissile(io);
 	    return true;
@@ -335,7 +335,7 @@ public class War {
 	}
 	choice = io.getChoice("Select type:", typeListStrings);
 	try {
-	    a = new Artillery(name, id, typeList[choice]);
+	    a = new Artillery(name, id, typeList[choice-1]);
 	    for (int i = 0; i < targetsAvailable.length; i++) {
 		targetsAvailable[i] = launchers.get(i).toString();
 	    }

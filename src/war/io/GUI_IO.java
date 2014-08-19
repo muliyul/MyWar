@@ -65,7 +65,7 @@ public class GUI_IO implements IOHandler{
     }
 
     @Override
-    public void showProgressBar(double percent) {
+    public void showProgressBar(final double percent) {
 	SwingUtilities.invokeLater(new Runnable() {
 	    public void run() {
 		if(progressBar==null)
@@ -84,7 +84,7 @@ public class GUI_IO implements IOHandler{
 	    progressBar.dispose();
     }
 
-    private JFrame getProgressBar(double percent) {
+    private JFrame getProgressBar(final double percent) {
 	JFrame frame=new JFrame(percent+"%");
 	frame.setSize(400, 200);
 	frame.setLocationRelativeTo(null);
