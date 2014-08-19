@@ -76,7 +76,7 @@ public class Missile extends Thread implements Destructable {
 	    launchpad.acquire(); //Acquire launching permission from launcher
 	    state = State.LAUNCHING;
 	    launch();
-	    launchpad.release(); //Release launchpad for next missile.
+	   
 	    if (launcher.getLState() == Launcher.State.HIDDEN) {
 		new Thread() { //New thread for changing launcher's state.
 		    public void run() {
@@ -97,11 +97,12 @@ public class Missile extends Thread implements Destructable {
 	try {
 	    state = State.FLYING;
 	    fly();
-	    logHit();
+	    logHit();	    
 	    state = State.HIT;
 	} catch (InterruptedException e) {
 	    state = State.INTERCEPTED;
 	}
+	 launchpad.release(); //Release launchpad for next missile.
     }
 
     private void launch() throws InterruptedException {
