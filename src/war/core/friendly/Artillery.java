@@ -53,7 +53,7 @@ public class Artillery extends Thread {
      * @param type - The artillery's type.
      */
     public Artillery(String warName, Type type) {
-	this(warName, "A-" + (idGenerator++), type);
+	this(warName, "A" + (idGenerator++), type);
     }
 
     /**
@@ -92,7 +92,7 @@ public class Artillery extends Thread {
     /**
      * Increments the number of launchers Intercepted by this artillery.
      */
-    public synchronized void incrementLaunchersIntercepted() {
+    public synchronized void incrementLaunchersDestroyed() {
 	launchersIntercepted++;
     }
     

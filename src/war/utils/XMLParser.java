@@ -71,7 +71,7 @@ public class XMLParser {
 			String lid = l.getAttribute("id");
 			boolean isHidden = (l.getAttribute("isHidden").toLowerCase()
 					.equals("true")) ? true : false;
-			Launcher ml = new Launcher(warName,
+			Launcher ml = new Launcher(warName, lid,
 					isHidden ? Launcher.State.HIDDEN : Launcher.State.ACTIVE);
 			NodeList missilelist = l.getElementsByTagName("missile");
 			ml.setMissiles(readMissiles(warName,missilelist, ml.getLaunchpad()));
@@ -135,7 +135,7 @@ public class XMLParser {
 				destructTime = Integer.valueOf(targetM
 						.getAttribute("destructAfterLaunch"));
 				Missile m = findMissile(targetId, launchers);
-				ironD.assignTarget(new Target(m,destructTime, ironD));
+				ironD.assignTarget(new Target(warName,m,destructTime, ironD));
 			}
 			v.add(ironD);
 
@@ -192,7 +192,7 @@ public class XMLParser {
 				targetId = targetL.getAttribute("id");
 				destructTime = Integer.valueOf(targetL
 						.getAttribute("destructTime"));
-				destructor.addTarget(new Target(findLauncher(targetId,
+				destructor.addTarget(new Target(warName,findLauncher(targetId,
 						launchers), destructTime, destructor));
 			}
 

@@ -118,7 +118,7 @@ public class Missile extends Thread implements Destructable {
     }
 
     private void logHit() {
-	logger.log(Level.SEVERE, this.id + " has hit " + dest + "!" + "("
+	logger.log(Level.SEVERE, this.id + " has hit " + dest + "!" + " ("
 		+ damage + ")", this);
     }
 

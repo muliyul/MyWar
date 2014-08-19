@@ -79,6 +79,12 @@ public class Launcher extends Thread implements Destructable {
 			missiles.get(i).start();
 		}
 	    }
+	    try {
+		sleep(1000);
+	    } catch (InterruptedException e) {
+		isRunning = false;
+		state = State.DESTROYED;
+	    }
 	}
     }
     
@@ -150,7 +156,6 @@ public class Launcher extends Thread implements Destructable {
      */
     public void destruct() {
 	interrupt();
-	state = State.DESTROYED;
     }
 
     /**

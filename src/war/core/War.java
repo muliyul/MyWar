@@ -2,6 +2,7 @@ package war.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -109,7 +110,7 @@ public class War {
 	this.launchersIntercepted = 0;
 	try {
 	    this.logger = Logger.getLogger(warName + "");
-	    logger.setUseParentHandlers(false);
+	    //logger.setUseParentHandlers(false);
 	    FileHandler fh = new FileHandler("logs/" + warName + "/" + warName
 		    + ".log");
 	    fh.setFormatter(new WarFormatter());
@@ -125,9 +126,9 @@ public class War {
      * @return An integer containing the selection.
      */
     private int showWarMenu(IOHandler io) {
-        return io.getChoice("Here comes the menu!", new String[]{"Add Missile",
-        	"Add Launcher", "Add Iron Dome", "Add Artillery",
-        	"Show Inventory", isActive ? "End war and show stats"
+        return io.getChoice("Here comes the menu!", new String[]{"Add missile",
+        	"Add launcher", "Add Iron-Dome", "Add artillery",
+        	"Show inventory", "Add target" ,isActive ? "End war and show stats"
         		: "Start war"});
     }
 
@@ -191,6 +192,9 @@ public class War {
 		    return false;
 		}
 		case 6: {
+		    correctInput = addTarget(io);
+		}
+		case 7: {
 		    if (isActive) {
 			end();
 			showStatistics(io);
@@ -290,8 +294,6 @@ public class War {
 		throw new IllegalArgumentException(
 			"Please choose from selected values");
 	    launchers.add(new Launcher(name, id, states[stateindex-1]));
-	    if (io.yesNo("Do you wish to add missiles?"))
-		addMissile(io);
 	    return true;
 	} catch (Exception e) {
 	    return false;
@@ -344,7 +346,7 @@ public class War {
 		destroyTime = io.getInt("Enter destroy time:");
 		if (destroyTime < 0)
 		    throw new IllegalArgumentException();
-		a.addTarget(new Target(launchers.get(choice - 1), destroyTime,
+		a.addTarget(new Target(name,launchers.get(choice - 1), destroyTime,
 			a));
 		finishedTargets = io.yesNo("Add more targets?");
 	    } while (finishedTargets);
@@ -356,6 +358,67 @@ public class War {
 	return true;
     }
     
+    /**
+     * 
+     * @param io
+     * @return
+     */
+    private boolean addTarget(IOHandler io) {
+	int selection = io.getChoice("Add target to existing:", new String[]{"Iron-Dome","Artillery"});
+	int domesSize = domes.size();
+	int artillerySize = artillery.size();
+	int interceptionTime;
+	int i = 0;
+	List<Missile> availableMissiles = new Vector<>();
+	String[] optionStrings;
+	IronDome selectedDome;
+	Missile selectedMissile;
+	Artillery selectedArtillery;
+	Launcher selectedLauncher;
+	if(selection < 1 || selection > 2){
+	    throw new IllegalArgumentException();
+	}
+	else{
+	    if(selection==1){
+		optionStrings = new String[domesSize];
+		for (i = 0; i < optionStrings.length; i++) {
+		    optionStrings[i] = domes.get(i).toString();
+		}
+		selection = io.getChoice("Select Iron-Dome to add to:", optionStrings);
+		selectedDome = domes.get(selection - 1);
+		for(Launcher l : launchers){
+		    for(Missile m : l.getMissiles()){
+			availableMissiles.add(m);
+		    }
+		}
+		optionStrings = new String[availableMissiles.size()];
+		i = 0;
+		for (String s : optionStrings) {
+		    s = availableMissiles.get(i++).toString();
+		}
+		selection = io.getChoice("Select missile to assign as target:", optionStrings);
+		selectedMissile = availableMissiles.get(selection - 1);
+		selectedDome.assignTarget(new Target(name,selectedMissile, 0, selectedDome));
+	    } else if(selection==2){
+		optionStrings = new String[artillerySize];
+		for (i = 0; i < optionStrings.length; i++) {
+		    optionStrings[i] = artillery.get(i).toString();
+		}
+		selection = io.getChoice("Select artillery to add target to:", optionStrings);
+		selectedArtillery = artillery.get(selection - 1);
+		optionStrings = new String[launchers.size()];
+		i=0;
+		for(String s : optionStrings){
+		    s = launchers.get(i++).toString();
+		}
+		selection = io.getChoice("Select launcher to assign as target:", optionStrings);
+		selectedLauncher = launchers.get(selection - 1);
+		selectedArtillery.addTarget(new Target(name, selectedLauncher, 0, selectedArtillery));
+	    }
+	}
+	return false;
+    }
+
     /**
      * Shows the statistics for current war object
      * @param io - Object that implements IOHandler.
