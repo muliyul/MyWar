@@ -87,7 +87,7 @@ public class War {
     private Artillery mostSuccessfulArtillery;
 
    public War(String warName) {
-//	   (warName, new List<IronDome>(), new List<Launcher>(), new List<Artillery>());
+	   this(warName, new Vector<IronDome>(), new Vector<Launcher>(), new Vector<Artillery>());
    }
     
     /**
