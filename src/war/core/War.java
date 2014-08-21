@@ -128,7 +128,7 @@ public class War {
     private int showWarMenu(IOHandler io) {
         return io.getChoice("Here comes the menu!", new String[]{"Add missile",
         	"Add launcher", "Add Iron-Dome", "Add artillery",
-        	"Show inventory", "Add target" ,isActive ? "End war and show stats"
+        	"Show inventory", "Add target to destroy" ,isActive ? "End war and show stats"
         		: "Start war"});
     }
 
@@ -193,6 +193,7 @@ public class War {
 		}
 		case 6: {
 		    correctInput = addTarget(io);
+		    break;
 		}
 		case 7: {
 		    if (isActive) {
@@ -393,8 +394,8 @@ public class War {
 		}
 		optionStrings = new String[availableMissiles.size()];
 		i = 0;
-		for (String s : optionStrings) {
-		    s = availableMissiles.get(i++).toString();
+		for (Missile m : availableMissiles) {
+		    optionStrings[i++] = m.toString();
 		}
 		selection = io.getChoice("Select missile to assign as target:", optionStrings);
 		selectedMissile = availableMissiles.get(selection - 1);
@@ -408,15 +409,16 @@ public class War {
 		selectedArtillery = artillery.get(selection - 1);
 		optionStrings = new String[launchers.size()];
 		i=0;
-		for(String s : optionStrings){
-		    s = launchers.get(i++).toString();
+		for(Launcher l : launchers){
+		    optionStrings[i] = launchers.get(i++).toString();
 		}
 		selection = io.getChoice("Select launcher to assign as target:", optionStrings);
 		selectedLauncher = launchers.get(selection - 1);
 		selectedArtillery.addTarget(new Target(name, selectedLauncher, 0, selectedArtillery));
 	    }
 	}
-	return false;
+	io.showMessege("Target Was Added Successfully!");
+	return true;
     }
 
     /**

@@ -139,7 +139,7 @@ public class Target {
         } else if (target instanceof Launcher) {
             Artillery a = (Artillery) origin;
             logger.log(Level.INFO, a.getType().toString() + " " + a
-        	    + " has been destroyed " + ((Launcher) target), a);
+        	    + " destroyed " + ((Launcher) target), a);
             a.incrementLaunchersDestroyed();
         }
     }
