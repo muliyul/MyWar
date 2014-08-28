@@ -73,8 +73,8 @@ public class Launcher extends Thread implements Destructable {
 
 	@Override
 	public void run() {
-		isRunning = true;
-		while (isRunning) {
+		//isRunning = true;
+		while (this.state != State.DESTROYED) {
 			if (missiles.size() > 0) {
 				for(int i = 0 ; i < missiles.size() ; i++){
 					if(!missiles.get(i).isAlive())
@@ -156,8 +156,9 @@ public class Launcher extends Thread implements Destructable {
 	 * Interrupts the launcher,
 	 */
 	public void destruct() {
-		isRunning = false;
-		state = State.DESTROYED;
+		this.state = State.DESTROYED;
+		//isRunning = false;
+		
 	}
 
 	/**

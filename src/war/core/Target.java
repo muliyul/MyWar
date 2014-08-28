@@ -81,7 +81,7 @@ public class Target {
 		Thread.sleep(interceptionTime * 1000);
 		synchronized (origin) {
 		    logInterceptionTry();
-		    Thread.sleep((int) (Math.random() * 3)); //TODO
+		    Thread.sleep((1 + (int) (Math.random() * 3))*1000); //takes between 1-3 seconds to destroy a launcher 
 		    if (ml.getLState() == Launcher.State.ACTIVE) {
 			ml.destruct();
 			logInterception();
