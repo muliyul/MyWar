@@ -82,7 +82,7 @@ public class Missile extends Thread implements Destructable {
 		    public void run() {
 			launcher.setVisible();
 			try {
-			    sleep(1 + (int) (Math.random() * 4)); //Set visible for random amount of time (1-4 seconds)
+			    sleep(1 + (int) (Math.random() * 10)); //Set visible for random amount of time (1-10 seconds)
 			} catch (InterruptedException e) {
 			    e.printStackTrace();
 			}

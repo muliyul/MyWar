@@ -65,6 +65,10 @@ public class IronDome extends Thread{
 		return id;
 	}
 	
+	public List<Target> getTargets() {
+		return targets;
+	}
+	
 	public int getMissilesIntercepted() {
 		return missilesIntercepted;
 	}

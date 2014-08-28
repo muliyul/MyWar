@@ -157,8 +157,7 @@ public class Target {
      */
     @Override
     public String toString() {
-	return "Target [target=" + target + ", interceptionTime="
-		+ interceptionTime + ", origin=" + origin + "]";
+	return target+"";
     }
 
 }

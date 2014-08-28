@@ -76,6 +76,10 @@ public class Artillery extends Thread {
     public String toString() {
 	return id;
     }
+    
+    public Vector<Target> getTargets() {
+		return targets;
+	}
 
     /**
      * Adds a target to the artillery. Thread-safe.

@@ -44,7 +44,7 @@ public class Console_IO implements IOHandler {
 
     @Override
     public int getChoice(String head, String[] options) {
-	String raw = "" + head + WarFormatter.EOL;
+	String raw = "" + head + WarFormatter.EOL;	
 	for (int i = 0; i < options.length; i++)
 	    raw += (i + 1) + ") " + options[i] + WarFormatter.EOL;
 	out.println(raw);
