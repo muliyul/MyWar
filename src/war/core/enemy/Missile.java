@@ -72,40 +72,53 @@ public class Missile extends Thread implements Destructable {
 
 	@Override
 	public void run() {
+
 		try {
 			launchpad.acquire(); //Acquire launching permission from launcher
-			state = State.LAUNCHING;
-			launch();
+			System.out.println(id +" acquired "+ launcher);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} 
 
-			if (launcher.getLState() == Launcher.State.HIDDEN) {
-				new Thread() { //New thread for changing launcher's state.
-					public void run() {
-						launcher.setVisible();
-						try {
-							sleep((3 + (int) (Math.random() * 10))*1000); //Set visible for random amount of time (3-10 seconds)
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						launcher.setHidden();
-					};
-				}.start();
+		if (launcher.getLState() != Launcher.State.DESTROYED){
+			try {
+				state = State.LAUNCHING;
+				launch();
+
+				if (launcher.getLState() == Launcher.State.HIDDEN) {
+					new Thread() { //New thread for changing launcher's state.
+						public void run() {
+							launcher.setVisible();
+							try {
+								sleep((3 + (int) (Math.random() * 6))*1000); //Set visible for random amount of time (3-6 seconds)
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							launcher.setHidden();
+						};
+					}.start();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				return;
 			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			return;
+			try {
+				launcher.incrementMissilesFired();
+				state = State.FLYING;		
+				fly();
+				logHit();	    
+				state = State.HIT;
+			} catch (InterruptedException e) {
+				state = State.INTERCEPTED;
+			}
 		}
-		try {
-			launcher.incrementMissilesFired();
-			state = State.FLYING;		
-			fly();
-			logHit();	    
-			state = State.HIT;
-		} catch (InterruptedException e) {
-			state = State.INTERCEPTED;
-		}
-		launcher.remove(this);
-		
 		launchpad.release(); //Release launchpad for next missile.
+
+
+		launcher.remove(this);
+
+
 	}
 
 	private void launch() throws InterruptedException {

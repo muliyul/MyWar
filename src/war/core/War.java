@@ -488,7 +488,7 @@ public class War {
 		}
 
 		for (i = 0; i < artillerySize; i++) {
-			launchersIntercepted += artillery.get(i).getLaunchersIntercepted();
+			//launchersIntercepted += artillery.get(i).getLaunchersIntercepted();
 			if (artillery.get(i).getLaunchersIntercepted() > mostSuccessfulArtillery
 					.getLaunchersIntercepted())
 				mostSuccessfulArtillery = artillery.get(i);
