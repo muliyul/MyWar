@@ -18,7 +18,6 @@ public class Launcher extends Thread implements Destructable {
 	}
 
 	private static int idGenerator = 100;
-	private War war;
 	private String id;
 	private List<Missile> missiles;
 	private boolean isRunning;
@@ -61,9 +60,6 @@ public class Launcher extends Thread implements Destructable {
 		this(warName, "L" + (idGenerator++), state);
 	}
 	
-	public void setWar(War war) {
-		this.war = war;
-	}
 
 	/**
 	 * Adds a missile to the launcher. Thread-safe method.

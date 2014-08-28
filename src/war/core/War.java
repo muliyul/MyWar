@@ -38,6 +38,8 @@ public class War {
 		}
 	}
 
+
+
 	/**
 	 * Shows up a load war menu.
 	 * @param io - Object that implements IOHandler.
@@ -111,6 +113,7 @@ public class War {
 		this.missilesFired = 0;
 		this.missilesIntercepted = 0;
 		this.launchersIntercepted = 0;
+		
 		try {
 			this.logger = Logger.getLogger(warName + "");
 			//logger.setUseParentHandlers(false);
@@ -226,9 +229,8 @@ public class War {
 		io.showMessege(name + " war inventory:");
 		io.showMessege("Launchers:");
 		for (Launcher l : launchers) {
-			if(l.getStateSring() != "DESTROYED" )
-				io.showMessege(l + (l.getMissiles().size() > 0 ? ": missiles"
-						+ l.getMissiles().toString() : ""));
+			io.showMessege(l + (l.getMissiles().size() > 0 ? ": missiles"
+					+ l.getMissiles().toString() : ""));
 		}
 		io.showMessege("Iron Domes:");
 		for (IronDome id : domes) {
@@ -252,7 +254,6 @@ public class War {
 		try {
 			String[] availableLaunchersStrings = new String[launchers.size()];
 			for (int i = 0; i < launchers.size(); i++) {
-				if(launchers.get(i).getStateSring() != "DESTROYED")
 				availableLaunchersStrings[i] = launchers.get(i).toString();
 			}
 			if (availableLaunchersStrings.length != 0) {
@@ -336,28 +337,13 @@ public class War {
 		Artillery a;
 		Artillery.Type[] typeList = Artillery.Type.values();
 		String[] typeListStrings = new String[typeList.length];
-		String[] targetsAvailable = new String[launchers.size()];
-		boolean finishedTargets = false;
-		int choice;
-		int destroyTime;
+		int choice;	
 		for (int i = 0; i < typeList.length; i++) {
 			typeListStrings[i] = typeList[i].toString();
 		}
 		choice = io.getChoice("Select type:", typeListStrings);
 		try {
-			a = new Artillery(name, id, typeList[choice-1]);
-			for (int i = 0; i < targetsAvailable.length; i++) {
-				targetsAvailable[i] = launchers.get(i).toString();
-			}
-			do {
-				choice = io.getChoice("Add target:", targetsAvailable);
-				destroyTime = io.getInt("Enter destroy time:");
-				if (destroyTime < 0)
-					throw new IllegalArgumentException();
-				a.addTarget(new Target(name,launchers.get(choice - 1), destroyTime,
-						a));
-				finishedTargets = io.yesNo("Add more targets?");
-			} while (finishedTargets);
+			a = new Artillery(name, id, typeList[choice-1]);		
 		} catch (Exception e) {
 			return false;
 		}
@@ -395,6 +381,7 @@ public class War {
 				selectedDome = domes.get(selection - 1);
 				for(Launcher l : launchers){
 					for(Missile m : l.getMissiles()){
+						if(m.getStateString() == "FLAYING")
 						availableMissiles.add(m);
 					}
 				}
@@ -429,7 +416,7 @@ public class War {
 					int selectionOffset = -1;
 					for(Launcher l : launchers){
 						if(l.getStateSring() != "DESTROYED")
-						optionStrings[i] = launchers.get(i).toString();
+							optionStrings[i] = launchers.get(i).toString();
 						else
 							selectionOffset++;
 						i++;
@@ -443,6 +430,8 @@ public class War {
 		io.showMessege("Target Was Added Successfully!");
 		return true;
 	}
+
+
 
 	/**
 	 * Shows the statistics for current war object
