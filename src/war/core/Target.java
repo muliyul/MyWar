@@ -16,7 +16,7 @@ public class Target {
 
     /**
      * @param warName
-     * 		  - The war's name (for logging purposes).
+     *            - The war's name (for logging purposes).
      * @param m
      *            - Missile to target.
      * @param interceptionTime
@@ -34,7 +34,7 @@ public class Target {
 
     /**
      * @param warName
-     * 		  - The war's name (for logging purposes).
+     *            - The war's name (for logging purposes).
      * @param ml
      *            - Launcher to target.
      * @param interceptionTime
@@ -62,7 +62,7 @@ public class Target {
 		Thread.sleep(interceptionTime * 1000);
 		synchronized (origin) {
 		    logInterceptionTry();
-		    Thread.sleep((int) (Math.random() * 3)); //TODO
+		    Thread.sleep((1 + (int) (Math.random() * 3)) * 1000); // TODO
 		    Missile m = ((Missile) target);
 		    if (target.isAlive()
 			    && m.getMState() == Missile.State.FLYING) {
@@ -81,7 +81,14 @@ public class Target {
 		Thread.sleep(interceptionTime * 1000);
 		synchronized (origin) {
 		    logInterceptionTry();
-		    Thread.sleep((1 + (int) (Math.random() * 3))*1000); //takes between 1-3 seconds to destroy a launcher 
+		    Thread.sleep((1 + (int) (Math.random() * 3)) * 1000); // takes
+									  // between
+									  // 1-3
+									  // seconds
+									  // to
+									  // destroy
+									  // a
+									  // launcher
 		    if (ml.getLState() == Launcher.State.ACTIVE) {
 			ml.destruct();
 			logInterception();
@@ -101,12 +108,33 @@ public class Target {
     private void logInterceptionTry() {
 	if (target instanceof Missile) {
 	    IronDome i = (IronDome) origin;
-	    logger.log(Level.INFO, i + " is trying to intercept "
-		    + ((Missile) target), i);
+	    Missile m = (Missile) target;
+	    logger.log(Level.INFO, i + " is trying to intercept " + m, i);
 	} else if (target instanceof Launcher) {
 	    Artillery a = (Artillery) origin;
+	    Launcher l = (Launcher) target;
 	    logger.log(Level.INFO, a.getType().toString() + " " + a
-		    + " is trying to destroy " + ((Launcher) target), a);
+		    + " is trying to destroy " + l, a);
+	}
+    }
+
+    /**
+     * Logs an interception of a missile or a launcher.
+     */
+    private void logInterception() {
+	if (target instanceof Missile) {
+	    IronDome i = (IronDome) origin;
+	    Missile m = (Missile) target;
+	    Launcher l = m.getLauncher();
+	    logger.log(Level.INFO, i + " has intercepted " + m, new Object[] {
+		    m, i, l });
+	    i.incrementMissilesIntercepted();
+	} else if (target instanceof Launcher) {
+	    Artillery a = (Artillery) origin;
+	    Launcher l = (Launcher) target;
+	    logger.log(Level.INFO, a.getType().toString() + " " + a
+		    + " destroyed " + l, new Object[] { a, l });
+	    a.incrementLaunchersDestroyed();
 	}
     }
 
@@ -118,30 +146,19 @@ public class Target {
 	    IronDome i = (IronDome) origin;
 	    Missile m = (Missile) target;
 	    logger.log(Level.SEVERE, "Iron dome " + i
-		    + " has failed to intercept " + ((Missile) target), i);
+		    + " has failed to intercept " + m, i);
 	    m.getLauncher().addDamage(m.getDamage());
 	} else if (target instanceof Launcher) {
 	    Artillery a = ((Artillery) origin);
-	    logger.log(Level.SEVERE, a.getType().toString() + " " + a
-		    + " has failed to destroy " + ((Launcher) target), a);
+	    Launcher l = (Launcher) target;
+	    if (l.getLState() != Launcher.State.DESTROYED){
+		logger.log(Level.SEVERE, a.getType().toString() + " " + a
+			+ " has failed to destroy " + l, a);
+	    } else {
+		logger.log(Level.SEVERE, l + " has already been destroyed" 
+			 , a);
+	    }
 	}
-    }
-
-    /**
-     * Logs an interception of a missile or a launcher.
-     */
-    private void logInterception() {
-        if (target instanceof Missile) {
-            IronDome i = (IronDome) origin;
-            logger.log(Level.INFO,
-        	    i + " has intercepted " + ((Missile) target), i);
-            i.incrementMissilesIntercepted();
-        } else if (target instanceof Launcher) {
-            Artillery a = (Artillery) origin;
-            logger.log(Level.INFO, a.getType().toString() + " " + a
-        	    + " destroyed " + ((Launcher) target), a);
-            a.incrementLaunchersDestroyed();
-        }
     }
 
     public int getInterceptionTime() {
@@ -157,7 +174,7 @@ public class Target {
      */
     @Override
     public String toString() {
-	return target+"";
+	return target.toString();
     }
 
 }
