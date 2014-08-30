@@ -18,13 +18,12 @@ import war.exceptions.NoArtilleryAvailableException;
 import war.exceptions.NoDomesAvailableException;
 import war.exceptions.NoLauncherAvailableException;
 import war.exceptions.NoMissileAvailableException;
-import war.exceptions.NoTargetAvailableException;
 import war.io.Console_IO;
 import war.io.IOHandler;
 import war.utils.WarFormatter;
 import war.utils.XMLParser;
 
-public class War {
+public class War extends Thread{
 
 	public static void main(String[] args) {
 		IOHandler io = new Console_IO();
@@ -62,9 +61,9 @@ public class War {
 		} while (choice != 1 && choice != 2);
 		checkDirectorys(warName);
 		if (choice == 1) {
-			return new War(warName);
+			return new War(warName,io);
 		} else if (choice == 2) {
-			return XMLParser.parseWar(warName, "config.xml");
+			return XMLParser.parseWar(warName, "config.xml", io);
 		} else
 			return null;
 	}
@@ -86,6 +85,7 @@ public class War {
 	}
 
 	private Logger logger;
+	private IOHandler io;
 	private List<IronDome> domes;
 	private List<Launcher> launchers;
 	private List<Artillery> artillery;
@@ -99,9 +99,9 @@ public class War {
 	private Launcher mostSuccessfulLauncher;
 	private Artillery mostSuccessfulArtillery;
 
-	public War(String warName) {
+	public War(String warName, IOHandler io) {
 		this(warName, new Vector<IronDome>(), new Vector<Launcher>(),
-				new Vector<Artillery>());
+				new Vector<Artillery>(), io);
 	}
 
 	/**
@@ -114,9 +114,11 @@ public class War {
 	 *            - List of launchers.
 	 * @param artillery
 	 *            - List of artillery.
+	 * @param io 
 	 */
 	public War(String warName, List<IronDome> domes, List<Launcher> launchers,
-			List<Artillery> artillery) {
+			List<Artillery> artillery, IOHandler io) {
+		this.io = io;
 		this.isActive = false;
 		this.domes = domes;
 		this.launchers = launchers;
@@ -153,14 +155,29 @@ public class War {
 						"Show inventory",
 						isActive ? "End war and show stats" : "Start war" });
 	}
+	
+	@Override
+	public void run() {
+		int numOfDestroyedLaunchers = 0;
+		isActive = true;
+		while(isActive){
+			for(Launcher l : launchers){
+				if(l.getLState() == Launcher.State.DESTROYED){
+					numOfDestroyedLaunchers++;
+				}
+				if(numOfDestroyedLaunchers == launchers.size() && numOfDestroyedLaunchers != 0){
+					endWar();
+					showInventory();
+				}
+			}
+		}
+	}
 
 	/**
 	 * Initiates the war starting all cached threads.
-	 * 
-	 * @param io
-	 *            - Object that implements IOHandler.
 	 */
-	private void start(IOHandler io) {
+	private void startWar() {
+		start();
 		for (IronDome d : domes)
 			d.start();
 		for (Launcher l : launchers)
@@ -174,14 +191,14 @@ public class War {
 	 * Terminates all the ongoing threads (besides missiles). In other words -
 	 * stops launching and intercepting.
 	 */
-	private void end() {
+	private void endWar() {
+		isActive = false;
 		for (IronDome d : domes)
 			d.Stop();
 		for (Launcher l : launchers)
 			l.Stop();
 		for (Artillery a : artillery)
 			a.Stop();
-
 	}
 
 	/**
@@ -199,88 +216,83 @@ public class War {
 			try {
 				switch (choice) {
 				case 1: {
-					addMissile(io);
+					addMissile();
 					break;
 				}
 				case 2: {
-					addLauncher(io);
+					addLauncher();
 					break;
 				}
 				case 3: {
-					addIronDome(io);
+					addIronDome();
 					break;
 				}
 				case 4: {
-					addArtillery(io);
+					addArtillery();
 					break;
 				}
 				case 5: {
-					addTarget(io);
+					addTarget();
 					break;
 				}
 				case 6: {
-					showInventory(io);
+					showInventory();
 					break;
 				}
 				case 7: {
 					if (isActive) {
-						end();
-						showStatistics(io);
-						return false;
+						endWar();
+						showStatistics();
+						return true;
 					} else {
 						if (launchers.size() == 0) {
 							throw new NoLauncherAvailableException(
 									"Please insert at least 1 launcher before starting the war");
 						}
-						isActive = true;
-						start(io);
+						startWar();
 					}
 					break;
 				}
 				}
 			} catch (IllegalArgumentException e) {
 				io.showError(e.getMessage() + WarFormatter.EOL);
+				correctInput = false;
 			} catch (NoLauncherAvailableException e) {
 				io.showError(e.getMessage());
 				// io.flushBuffers();
-				return false;
 			} catch (NoDomesAvailableException e) {
 				if (domes.size() == 0 && artillery.size() == 0) {
 					io.showError("There are no Iron Domes or Artillery to add targets to,"
 							+ WarFormatter.EOL
 							+ "Please add one first"
 							+ WarFormatter.EOL);
-					return false;
 				} else {
 					io.showError(e.getMessage() + WarFormatter.EOL);
 				}
+				correctInput = false;
 			} catch (NoMissileAvailableException e) {
 				io.showError(e.getMessage() + WarFormatter.EOL);
+				correctInput = false;
 			} catch (NoArtilleryAvailableException e) {
 				if (domes.size() == 0 && artillery.size() == 0) {
 					io.showError("There are no Iron Domes or Artillery to add targets to,"
 							+ WarFormatter.EOL
 							+ "Please add one first"
 							+ WarFormatter.EOL);
-					return false;
 				} else {
 					io.showError(e.getMessage() + WarFormatter.EOL);
 				}
-			} finally {
 				correctInput = false;
 			}
 		} while (!correctInput);
-		return true;
+		return false;
 	}
 
 	/**
 	 * Shows current war object's inventory (Launchers and their missiles, Iron
 	 * domes and artillery).
-	 * 
-	 * @param io
-	 *            - Object that implements IOHandler.
 	 */
-	private void showInventory(IOHandler io) {
+	private void showInventory() {
 		io.showMessege(name + " war inventory:");
 		io.showMessege("Launchers:");
 		for (Launcher l : launchers) {
@@ -311,7 +323,7 @@ public class War {
 	 * @return boolean regarding the correctness of the input.
 	 * @throws NoLauncherAvailableException
 	 */
-	private void addMissile(IOHandler io) throws NoLauncherAvailableException {
+	private void addMissile() throws NoLauncherAvailableException {
 		Launcher selectedLauncher = null;
 		List<Launcher> availableLaunchers = new Vector<>();
 		for (Launcher l : launchers) {
@@ -352,11 +364,9 @@ public class War {
 	/**
 	 * Prompts a user for adding a launcher and receiving the input.
 	 * 
-	 * @param io
-	 *            - Object that implements IOHandler.
 	 * @return boolean regarding the correctness of the input.
 	 */
-	private void addLauncher(IOHandler io) {
+	private void addLauncher() {
 		io.flushBuffers();
 		String id = io.getInput("Enter id:");
 		Launcher.State[] states = { Launcher.State.ACTIVE,
@@ -379,11 +389,9 @@ public class War {
 	/**
 	 * Prompts a user for adding an Iron-Dome and receiving the input.
 	 * 
-	 * @param io
-	 *            - Object that implements IOHandler.
 	 * @return boolean regarding the correctness of the input.
 	 */
-	private void addIronDome(IOHandler io) {
+	private void addIronDome() {
 		io.flushBuffers();
 		String id = io.getInput("Enter id:");
 		IronDome i;
@@ -396,11 +404,9 @@ public class War {
 	/**
 	 * Prompts a user for adding an Artillery and receiving the input.
 	 * 
-	 * @param io
-	 *            - Object that implements IOHandler.
 	 * @return boolean regarding the correctness of the input.
 	 */
-	private void addArtillery(IOHandler io) {
+	private void addArtillery() {
 		io.flushBuffers();
 		String id = io.getInput("Enter id:");
 		Artillery a;
@@ -423,14 +429,13 @@ public class War {
 
 	/**
 	 * 
-	 * @param io
 	 * @return
 	 * @throws NoDomesAvailableException
 	 * @throws NoMissileAvailableException
 	 * @throws NoLauncherAvailableException
 	 * @throws NoArtilleryAvailableException
 	 */
-	private void addTarget(IOHandler io) throws NoDomesAvailableException,
+	private void addTarget() throws NoDomesAvailableException,
 			NoMissileAvailableException, NoLauncherAvailableException,
 			NoArtilleryAvailableException {
 		int selection = io.getChoice("Add target to existing:", new String[] {
@@ -539,11 +544,8 @@ public class War {
 
 	/**
 	 * Shows the statistics for current war object
-	 * 
-	 * @param io
-	 *            - Object that implements IOHandler.
 	 */
-	private void showStatistics(IOHandler io) {
+	private void showStatistics() {
 		double percent = 0;
 		int i = 0;
 		int domesSize = domes.size();

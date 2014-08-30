@@ -22,6 +22,7 @@ import war.core.enemy.Launcher;
 import war.core.enemy.Missile;
 import war.core.friendly.Artillery;
 import war.core.friendly.IronDome;
+import war.io.IOHandler;
 
 public class XMLParser {
 
@@ -29,9 +30,10 @@ public class XMLParser {
     	 * Parses an entire war from XML configuration file.
     	 * @param name - The war's name.
     	 * @param filePath - The XML's full file path.
+    	 * @param io 
     	 * @return
     	 */
-	public static War parseWar(String name, String filePath) {
+	public static War parseWar(String name, String filePath, IOHandler io) {
 		List<IronDome> domes = null;
 		List<Launcher> launchers = null;
 		List<Artillery> artillery = null;
@@ -52,7 +54,7 @@ public class XMLParser {
 			return null;
 		}
 
-		return new War(name, domes, launchers, artillery);
+		return new War(name, domes, launchers, artillery, io);
 	}
 
 	/**
