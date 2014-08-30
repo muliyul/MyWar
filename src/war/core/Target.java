@@ -9,6 +9,9 @@ import war.core.friendly.Artillery;
 import war.core.friendly.IronDome;
 
 public class Target {
+
+	private final int MIN_ACTIVATION_TIME = 1;
+	private final int MAX_ACTIVATION_TIME = 3;
 	private Logger logger;
 	private Thread target;
 	private Object origin;
@@ -59,10 +62,12 @@ public class Target {
 	public void intercept() {
 		if (target instanceof Missile) {
 			try {
-				Thread.sleep(interceptionTime * 1000);
+				Thread.sleep(interceptionTime * War.SECOND);
 				synchronized (origin) {
 					logInterceptionTry();
-					Thread.sleep((1 + (int) (Math.random() * 3)) * 1000); // TODO
+					Thread.sleep((MIN_ACTIVATION_TIME + (int) (Math.random() * MAX_ACTIVATION_TIME))
+							* War.SECOND); // takes between 1-3 seconds to try
+											// to destroy a launcher
 					Missile m = ((Missile) target);
 					if (target.isAlive()
 							&& m.getMState() == Missile.State.FLYING) {
@@ -78,10 +83,12 @@ public class Target {
 		} else if (target instanceof Launcher) {
 			Launcher ml = (Launcher) target;
 			try {
-				Thread.sleep(interceptionTime * 1000);
+				Thread.sleep(interceptionTime * War.SECOND);
 				synchronized (origin) {
 					logInterceptionTry();
-					Thread.sleep((1 + (int) (Math.random() * 3)) * 1000); // takes between 1-3 seconds to try to destroy a launcher		
+					Thread.sleep((MIN_ACTIVATION_TIME + (int) (Math.random() * MAX_ACTIVATION_TIME))
+							* War.SECOND); // takes between 1-3 seconds to try
+											// to destroy a launcher
 					if (ml.getLState() == Launcher.State.ACTIVE) {
 						ml.destruct();
 						logInterception();
@@ -144,12 +151,11 @@ public class Target {
 		} else if (target instanceof Launcher) {
 			Artillery a = ((Artillery) origin);
 			Launcher l = (Launcher) target;
-			if (l.getLState() != Launcher.State.DESTROYED){
+			if (l.getLState() != Launcher.State.DESTROYED) {
 				logger.log(Level.SEVERE, a.getType().toString() + " " + a
 						+ " has failed to destroy " + l, a);
 			} else {
-				logger.log(Level.SEVERE, l + " has already been destroyed" 
-						, a);
+				logger.log(Level.SEVERE, l + " has already been destroyed", a);
 			}
 		}
 	}

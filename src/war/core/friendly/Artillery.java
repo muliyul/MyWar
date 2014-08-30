@@ -25,18 +25,21 @@ public class Artillery extends Thread {
 
 	/**
 	 * 
-	 * @param warName - The war's name (for logging purposes).
-	 * @param id - The artillery's ID.
-	 * @param type - The artillery's type.
+	 * @param warName
+	 *            - The war's name (for logging purposes).
+	 * @param id
+	 *            - The artillery's ID.
+	 * @param type
+	 *            - The artillery's type.
 	 */
 	public Artillery(String warName, String id, Type type) {
-		this.id ="A" + id;
+		this.id = "A" + id;
 		this.logger = Logger.getLogger(warName);
 		this.type = type;
 		this.targets = new Vector<>();
 		this.launchersIntercepted = 0;
 		try {
-			FileHandler fh = new FileHandler("logs/" + warName + "/" +  this.id
+			FileHandler fh = new FileHandler("logs/" + warName + "/" + this.id
 					+ ".log");
 			fh.setFilter(new ObjectFilter(this));
 			fh.setFormatter(new WarFormatter());
@@ -50,8 +53,10 @@ public class Artillery extends Thread {
 
 	/**
 	 * 
-	 * @param warName - The war's name (for logging purposes).
-	 * @param type - The artillery's type.
+	 * @param warName
+	 *            - The war's name (for logging purposes).
+	 * @param type
+	 *            - The artillery's type.
 	 */
 	public Artillery(String warName, Type type) {
 		this(warName, "" + (idGenerator++), type);
@@ -75,7 +80,7 @@ public class Artillery extends Thread {
 	}
 
 	private void logAStart() {
-		logger.log(Level.INFO, this + " has started", this);		
+		logger.log(Level.INFO, this + " has started", this);
 	}
 
 	@Override
@@ -89,7 +94,9 @@ public class Artillery extends Thread {
 
 	/**
 	 * Adds a target to the artillery. Thread-safe.
-	 * @param t - The target.
+	 * 
+	 * @param t
+	 *            - The target.
 	 */
 	public synchronized void addTarget(Target t) {
 		targets.add(t);

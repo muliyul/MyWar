@@ -23,7 +23,9 @@ import war.io.IOHandler;
 import war.utils.WarFormatter;
 import war.utils.XMLParser;
 
-public class War extends Thread{
+public class War extends Thread {
+
+	public static final int SECOND = 1000;
 
 	public static void main(String[] args) {
 		IOHandler io = new Console_IO();
@@ -61,7 +63,7 @@ public class War extends Thread{
 		} while (choice != 1 && choice != 2);
 		checkDirectorys(warName);
 		if (choice == 1) {
-			return new War(warName,io);
+			return new War(warName, io);
 		} else if (choice == 2) {
 			return XMLParser.parseWar(warName, "config.xml", io);
 		} else
@@ -114,7 +116,7 @@ public class War extends Thread{
 	 *            - List of launchers.
 	 * @param artillery
 	 *            - List of artillery.
-	 * @param io 
+	 * @param io
 	 */
 	public War(String warName, List<IronDome> domes, List<Launcher> launchers,
 			List<Artillery> artillery, IOHandler io) {
@@ -130,7 +132,6 @@ public class War extends Thread{
 
 		try {
 			this.logger = Logger.getLogger(warName + "");
-			// logger.setUseParentHandlers(false);
 			FileHandler fh = new FileHandler("logs/" + warName + "/" + warName
 					+ ".log");
 			fh.setFormatter(new WarFormatter());
@@ -155,21 +156,32 @@ public class War extends Thread{
 						"Show inventory",
 						isActive ? "End war and show stats" : "Start war" });
 	}
-	
+
 	@Override
-	public void run() {
-		int numOfDestroyedLaunchers = 0;
+	public void run() { // checks if all launchers were destroyed and then end
+						// war
+		int numOfDestroyedLaunchers;
 		isActive = true;
-		while(isActive){
-			for(Launcher l : launchers){
-				if(l.getLState() == Launcher.State.DESTROYED){
+		while (isActive) {
+			numOfDestroyedLaunchers = 0;
+			try {
+				sleep(SECOND * 2); // check the launchers stats every 2 secs
+			} catch (InterruptedException e) {
+			}
+
+			for (Launcher l : launchers) {
+				if (l.getLState() == Launcher.State.DESTROYED) {
 					numOfDestroyedLaunchers++;
 				}
-				if(numOfDestroyedLaunchers == launchers.size() && numOfDestroyedLaunchers != 0){
-					endWar();
-					showInventory();
-				}
 			}
+			if (numOfDestroyedLaunchers == launchers.size()
+					&& numOfDestroyedLaunchers != 0) {
+				endWar();
+				io.showError("all launchers were destroyed war will now end !!!");
+				showStatistics();
+				System.exit(0);
+			}
+
 		}
 	}
 
@@ -259,7 +271,6 @@ public class War extends Thread{
 				correctInput = false;
 			} catch (NoLauncherAvailableException e) {
 				io.showError(e.getMessage());
-				// io.flushBuffers();
 			} catch (NoDomesAvailableException e) {
 				if (domes.size() == 0 && artillery.size() == 0) {
 					io.showError("There are no Iron Domes or Artillery to add targets to,"
@@ -284,6 +295,7 @@ public class War extends Thread{
 				}
 				correctInput = false;
 			}
+
 		} while (!correctInput);
 		return false;
 	}
@@ -463,7 +475,7 @@ public class War extends Thread{
 				}
 				selection = io.getChoice("Select Iron-Dome to add to:",
 						optionStrings);
-				if (selection < 1 || selection >= optionStrings.length) {
+				if (selection < 1 || selection > optionStrings.length) {
 					throw new IllegalArgumentException(
 							"Please choose from available values");
 				}
@@ -486,7 +498,7 @@ public class War extends Thread{
 					selection = io.getChoice(
 							"Select missile to assign as target:",
 							optionStrings);
-					if (selection < 1 || selection >= optionStrings.length) {
+					if (selection < 1 || selection > optionStrings.length) {
 						throw new IllegalArgumentException(
 								"Please choose from available values");
 					}
@@ -505,7 +517,7 @@ public class War extends Thread{
 				}
 				selection = io.getChoice("Select artillery to add target to:",
 						optionStrings);
-				if (selection < 1 || selection >= optionStrings.length) {
+				if (selection < 1 || selection > optionStrings.length) {
 					throw new IllegalArgumentException(
 							"Please choose from available values");
 				}
@@ -529,7 +541,7 @@ public class War extends Thread{
 					selection = io.getChoice(
 							"Select launcher to assign as target:",
 							optionStrings);
-					if (selection < 1 || selection >= optionStrings.length) {
+					if (selection < 1 || selection > optionStrings.length) {
 						throw new IllegalArgumentException(
 								"Please choose from available values");
 					}
@@ -566,7 +578,8 @@ public class War extends Thread{
 		threads.removeIf(new Predicate<Thread>() {
 			public boolean test(Thread t) {
 				return t.toString().contains("system")
-						|| t.toString().contains("main") || !t.isAlive();
+						|| t.toString().contains("main") || t == War.this
+						|| !t.isAlive();
 			}
 		});
 
@@ -605,6 +618,7 @@ public class War extends Thread{
 		}
 
 		io.showMessege(this.toString());
+		logStats(this.toString());
 	}
 
 	@Override
@@ -629,7 +643,6 @@ public class War extends Thread{
 					+ mostSuccessfulLauncher.getMissilesFired()
 					+ WarFormatter.EOL + "Damage done: "
 					+ mostSuccessfulLauncher.getTotalDamage();
-			logStats(stats);
 			return stats;
 		} catch (NullPointerException e) {
 			String stats = name + " has caused " + totalDamage
@@ -638,7 +651,7 @@ public class War extends Thread{
 					+ "Missiles intercepted: " + missilesIntercepted
 					+ WarFormatter.EOL + "Launchers intercepted: "
 					+ launchersIntercepted;
-			logStats(stats);
+
 			return stats;
 		}
 	}

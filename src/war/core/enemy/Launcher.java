@@ -179,7 +179,7 @@ public class Launcher extends Thread implements Destructable {
 
 	private void logMissileDestructBeforeLaunch(Missile m) {
 		logger.log(Level.SEVERE, m
-				+ " was destructed before launch becuse his launcher " + this
+				+ " was destructed before launch because his launcher " + this
 				+ " was destroyed", m);
 
 	}

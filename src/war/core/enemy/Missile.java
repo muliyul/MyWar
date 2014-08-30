@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import war.core.Destructable;
+import war.core.War;
 import war.utils.ObjectFilter;
 import war.utils.WarFormatter;
 
@@ -16,6 +17,8 @@ public class Missile extends Thread implements Destructable {
 		LAUNCHING, FLYING, HIT, INTERCEPTED
 	}
 
+	private final int MIN_HIDE_TIME = 3;
+	private final int MAX_HIDE_TIME = 6;
 	private static int idGenerator = 100;
 	private State state;
 	private String id;
@@ -30,11 +33,16 @@ public class Missile extends Thread implements Destructable {
 
 	/**
 	 * 
-	 * @param warName - War's name for logging purpose.
-	 * @param dest - Destination in string format.
-	 * @param launchTime - The time to countdown before launch (in seconds).
-	 * @param flyTime - The time of flight (in seconds)
-	 * @param damage - The damage the missile will deal if it hits the target.
+	 * @param warName
+	 *            - War's name for logging purpose.
+	 * @param dest
+	 *            - Destination in string format.
+	 * @param launchTime
+	 *            - The time to countdown before launch (in seconds).
+	 * @param flyTime
+	 *            - The time of flight (in seconds)
+	 * @param damage
+	 *            - The damage the missile will deal if it hits the target.
 	 */
 	public Missile(String warName, String dest, int launchTime, int flyTime,
 			int damage) {
@@ -43,18 +51,24 @@ public class Missile extends Thread implements Destructable {
 
 	/**
 	 * 
-	 * @param warName - War's name for logging purpose.
-	 * @param id - The missile's ID.
-	 * @param dest - Destination in string format.
-	 * @param launchTime - The time to countdown before launch (in seconds).
-	 * @param flyTime - The time of flight (in seconds)
-	 * @param damage - The damage the missile will deal if it hits the target.
+	 * @param warName
+	 *            - War's name for logging purpose.
+	 * @param id
+	 *            - The missile's ID.
+	 * @param dest
+	 *            - Destination in string format.
+	 * @param launchTime
+	 *            - The time to countdown before launch (in seconds).
+	 * @param flyTime
+	 *            - The time of flight (in seconds)
+	 * @param damage
+	 *            - The damage the missile will deal if it hits the target.
 	 */
 	public Missile(String warName, String id, String dest, int launchTime,
 			int flyTime, int damage) {
 		this.dest = dest;
-		this.launchTime = launchTime * 1000;
-		this.flyTime = flyTime * 1000;
+		this.launchTime = launchTime;
+		this.flyTime = flyTime;
 		this.id = id;
 		this.damage = damage;
 		logger = Logger.getLogger(warName);
@@ -77,20 +91,23 @@ public class Missile extends Thread implements Destructable {
 
 		try {
 			state = State.LAUNCHING;
-			launchpad.acquire(); //Acquire launching permission from launcher	
+			launchpad.acquire(); // Acquire launching permission from launcher
 			launch();
 		} catch (InterruptedException e1) {
 			// should never get this exception
-			
-		} 
 
-		if (launcher.getLState() != Launcher.State.DESTROYED){
+		}
+
+		if (launcher.getLState() != Launcher.State.DESTROYED) {
 			if (launcher.getLState() == Launcher.State.HIDDEN) {
-				new Thread() { //New thread for changing launcher's state.
+				new Thread() { // New thread for changing launcher's state.
 					public void run() {
 						launcher.setVisible();
 						try {
-							sleep((3 + (int) (Math.random() * 6))*1000); //Set visible for random amount of time (3-6 seconds)
+							sleep((MIN_HIDE_TIME + (int) (Math.random() * MAX_HIDE_TIME))
+									* War.SECOND); // Set visible for random
+													// amount of time (3-6
+													// seconds)
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -102,7 +119,7 @@ public class Missile extends Thread implements Destructable {
 				state = State.FLYING;
 				launcher.incrementMissilesFired();
 				fly();
-				logHit();	    
+				logHit();
 				state = State.HIT;
 			} catch (InterruptedException e) {
 				state = State.INTERCEPTED;
@@ -110,26 +127,26 @@ public class Missile extends Thread implements Destructable {
 			launcher.remove(this);
 		}
 
-		launchpad.release(); //Release launchpad for next missile.
+		launchpad.release(); // Release launchpad for next missile.
 	}
 
 	private void logMStart() {
-		logger.log(Level.INFO, this + " has started", this);	
+		logger.log(Level.INFO, this + " has started", this);
 	}
 
 	private void launch() throws InterruptedException {
-		sleep(launchTime);
+		sleep(launchTime * War.SECOND);
 	}
 
 	private void fly() throws InterruptedException {
 		logger.log(Level.WARNING, this + " has been launched from " + launcher
 				+ " to " + dest + "!", new Object[] { this, launcher });
-		sleep(flyTime);
+		sleep(flyTime * War.SECOND);
 	}
 
 	private void logHit() {
 		logger.log(Level.SEVERE, this.id + " has hit " + dest + "!" + " ("
-				+ damage + ")", new Object[]{ this, launcher });
+				+ damage + ")", new Object[] { this, launcher });
 	}
 
 	@Override
@@ -158,9 +175,6 @@ public class Missile extends Thread implements Destructable {
 		return state;
 	}
 
-
-
-
 	public int getDamage() {
 		return damage;
 	}
@@ -174,6 +188,6 @@ public class Missile extends Thread implements Destructable {
 	}
 
 	protected void setLast() {
-		last=true;
+		last = true;
 	}
 }

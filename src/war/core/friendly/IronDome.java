@@ -11,8 +11,8 @@ import war.core.Target;
 import war.utils.ObjectFilter;
 import war.utils.WarFormatter;
 
-public class IronDome extends Thread{
-	
+public class IronDome extends Thread {
+
 	private String id;
 	private Logger logger;
 	private int missilesIntercepted;
@@ -21,11 +21,13 @@ public class IronDome extends Thread{
 
 	/**
 	 * 
-	 * @param warName - The war's name (for logging purposes).
-	 * @param id - The Iron-Dome's ID.
+	 * @param warName
+	 *            - The war's name (for logging purposes).
+	 * @param id
+	 *            - The Iron-Dome's ID.
 	 */
 	public IronDome(String warName, String id) {
-		this.id =  id;
+		this.id = id;
 		this.logger = Logger.getLogger(warName);
 		this.missilesIntercepted = 0;
 		this.targets = new Vector<>();
@@ -43,44 +45,42 @@ public class IronDome extends Thread{
 		}
 	}
 
-
 	@Override
 	public void run() {
 		logIDStart();
-	    isRunning = true;
-	    while(isRunning){
-		if(targets.size()>0)
-		    targets.remove(0).intercept();
-	    }
+		isRunning = true;
+		while (isRunning) {
+			if (targets.size() > 0)
+				targets.remove(0).intercept();
+		}
 	}
-	
+
 	private void logIDStart() {
-		logger.log(Level.INFO, this + " has started", this);	
+		logger.log(Level.INFO, this + " has started", this);
 	}
 
 	@Override
 	public String toString() {
 		return id;
 	}
-	
+
 	public List<Target> getTargets() {
 		return targets;
 	}
-	
+
 	public int getMissilesIntercepted() {
 		return missilesIntercepted;
 	}
 
-	
 	public synchronized void assignTarget(Target target) {
 		targets.add(target);
 	}
 
 	public synchronized void incrementMissilesIntercepted() {
-	    missilesIntercepted++;
+		missilesIntercepted++;
 	}
 
 	public void Stop() {
-	    isRunning = false;
+		isRunning = false;
 	}
 }
