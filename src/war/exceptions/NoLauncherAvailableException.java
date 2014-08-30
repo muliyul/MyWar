@@ -6,6 +6,4 @@ public class NoLauncherAvailableException extends Exception {
 		super(string);
 	}
 
-	public NoLauncherAvailableException() {
-	}
 }
