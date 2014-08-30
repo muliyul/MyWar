@@ -2,7 +2,6 @@ package war.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -11,16 +10,17 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.util.Duration;
 import war.core.enemy.Launcher;
 import war.core.enemy.Missile;
 import war.core.friendly.Artillery;
 import war.core.friendly.IronDome;
+import war.exceptions.NoArtilleryAvailableException;
+import war.exceptions.NoDomesAvailableException;
+import war.exceptions.NoLauncherAvailableException;
+import war.exceptions.NoMissileAvailableException;
+import war.exceptions.NoTargetAvailableException;
 import war.io.Console_IO;
 import war.io.IOHandler;
-import war.utils.NoLauncherAvailableException;
 import war.utils.WarFormatter;
 import war.utils.XMLParser;
 
@@ -47,9 +47,13 @@ public class War {
 	 * @return new initialized war object or null of an error occurred.
 	 */
 	private static War loadMenu(IOHandler io) {
-		io.showMessege("******************************\n");
-		io.showMessege(" Welcome to the War Simulator\n");
-		io.showMessege("******************************\n");
+		io.showMessege(new String[] {
+				"*********************************************"
+						+ WarFormatter.EOL,
+				" Welcome to the War Simulator By Yoni & Muli"
+						+ WarFormatter.EOL,
+				"*********************************************"
+						+ WarFormatter.EOL });
 		String warName = io.getInput("Enter war name:");
 		int choice = -1;
 		do {
@@ -145,9 +149,9 @@ public class War {
 	private int showWarMenu(IOHandler io, String warName) {
 		return io.getChoice("\nHere comes the menu for " + warName + " !",
 				new String[] { "Add missile", "Add launcher", "Add Iron-Dome",
-				"Add artillery", "Add target to destroy",
-				"Show inventory",
-				isActive ? "End war and show stats" : "Start war" });
+						"Add artillery", "Add target to destroy",
+						"Show inventory",
+						isActive ? "End war and show stats" : "Start war" });
 	}
 
 	/**
@@ -187,59 +191,86 @@ public class War {
 	 *            - The index of the chosen option.
 	 * @param io
 	 *            - Object that implements IOHandler.
-	 * @return boolean containing the user's willingness to keep the war
-	 *         running.
+	 * @return boolean containing the user's willingness to stop the war.
 	 */
 	private boolean invokeChoice(int choice, IOHandler io) {
-		boolean correctInput = false;
+		boolean correctInput = true;
 		do {
 			try {
 				switch (choice) {
 				case 1: {
-					correctInput = addMissile(io);
+					addMissile(io);
 					break;
 				}
 				case 2: {
-					correctInput = addLauncher(io);
+					addLauncher(io);
 					break;
 				}
 				case 3: {
-					correctInput = addIronDome(io);
+					addIronDome(io);
 					break;
 				}
 				case 4: {
-					correctInput = addArtillery(io);
+					addArtillery(io);
 					break;
 				}
 				case 5: {
-					correctInput = addTarget(io);
+					addTarget(io);
 					break;
 				}
 				case 6: {
 					showInventory(io);
-					return false;
+					break;
 				}
 				case 7: {
 					if (isActive) {
 						end();
 						showStatistics(io);
-						return true;
+						return false;
 					} else {
-						if(launchers.size() == 0){
-							io.showError("Please insert at least 1 launcher before starting the war");
-							return false;
+						if (launchers.size() == 0) {
+							throw new NoLauncherAvailableException(
+									"Please insert at least 1 launcher before starting the war");
 						}
 						isActive = true;
 						start(io);
-						correctInput = true;
 					}
+					break;
 				}
 				}
 			} catch (IllegalArgumentException e) {
+				io.showError(e.getMessage() + WarFormatter.EOL);
+			} catch (NoLauncherAvailableException e) {
+				io.showError(e.getMessage());
+				// io.flushBuffers();
+				return false;
+			} catch (NoDomesAvailableException e) {
+				if (domes.size() == 0 && artillery.size() == 0) {
+					io.showError("There are no Iron Domes or Artillery to add targets to,"
+							+ WarFormatter.EOL
+							+ "Please add one first"
+							+ WarFormatter.EOL);
+					return false;
+				} else {
+					io.showError(e.getMessage() + WarFormatter.EOL);
+				}
+			} catch (NoMissileAvailableException e) {
+				io.showError(e.getMessage() + WarFormatter.EOL);
+			} catch (NoArtilleryAvailableException e) {
+				if (domes.size() == 0 && artillery.size() == 0) {
+					io.showError("There are no Iron Domes or Artillery to add targets to,"
+							+ WarFormatter.EOL
+							+ "Please add one first"
+							+ WarFormatter.EOL);
+					return false;
+				} else {
+					io.showError(e.getMessage() + WarFormatter.EOL);
+				}
+			} finally {
 				correctInput = false;
 			}
 		} while (!correctInput);
-		return false;
+		return true;
 	}
 
 	/**
@@ -278,46 +309,44 @@ public class War {
 	 * @param io
 	 *            - Object that implements IOHandler.
 	 * @return boolean regarding the correctness of the input.
+	 * @throws NoLauncherAvailableException
 	 */
-	private boolean addMissile(IOHandler io) {
+	private void addMissile(IOHandler io) throws NoLauncherAvailableException {
 		Launcher selectedLauncher = null;
-		try {
-			List<Launcher> availableLaunchers = new Vector<>();
-			for(Launcher l : launchers){
-				if(l.getLState() != Launcher.State.DESTROYED){
-					availableLaunchers.add(l);
-				}
+		List<Launcher> availableLaunchers = new Vector<>();
+		for (Launcher l : launchers) {
+			if (l.getLState() != Launcher.State.DESTROYED) {
+				availableLaunchers.add(l);
 			}
-			String[] availableLaunchersStrings = new String[availableLaunchers.size()];
-			for (int i = 0; i < availableLaunchers.size(); i++) {
-				availableLaunchersStrings[i] = availableLaunchers.get(i).toString();
-			}
-			if (availableLaunchersStrings.length != 0) {
-				int choice = io.getChoice("Enter launcher to add to:",
-						availableLaunchersStrings);
-				if (choice < 0 || choice > availableLaunchersStrings.length)
-					throw new IllegalArgumentException(
-							"Please choose from selected values");
-				selectedLauncher = availableLaunchers.get(choice - 1);
-				io.flushBuffers();
-				String dest = io.getInput("Enter destination:");
-				int flyTime = io.getInt("Enter fly time:");
-				if (flyTime <= 0)
-					throw new IllegalArgumentException(
-							"Please enter positive values");
-				int damage = io.getInt("Enter damage:");
-				selectedLauncher.addMissile(new Missile(name, dest, 0, flyTime,
-						damage));
-			} else
-				throw new NoLauncherAvailableException();
-			return true;
-		} catch (NoLauncherAvailableException e) {
-			io.showError("No launchers available!\nPlease add one first");
-			return true;
-		} catch (IllegalArgumentException e) {
-			io.showError("Illegal argument - try again");
-			return false;
 		}
+		String[] availableLaunchersStrings = new String[availableLaunchers
+				.size()];
+		for (int i = 0; i < availableLaunchers.size(); i++) {
+			availableLaunchersStrings[i] = availableLaunchers.get(i).toString();
+		}
+		if (availableLaunchersStrings.length != 0) {
+			int choice = io.getChoice("Enter launcher to add to:",
+					availableLaunchersStrings);
+			if (choice < 1 || choice > availableLaunchersStrings.length)
+				throw new IllegalArgumentException(
+						"Please choose from selected values");
+			selectedLauncher = availableLaunchers.get(choice - 1);
+			io.flushBuffers();
+			String dest = io.getInput("Enter destination:");
+			int flyTime = io.getInt("Enter fly time:");
+			if (flyTime <= 0)
+				throw new IllegalArgumentException(
+						"Please enter positive values");
+			int damage = io.getInt("Enter damage:");
+			if (damage <= 0)
+				throw new IllegalArgumentException(
+						"Please enter positive values");
+			selectedLauncher.addMissile(new Missile(name, dest, 0, flyTime,
+					damage));
+		} else
+			throw new NoLauncherAvailableException(
+					"No launchers available!\nPlease add one first");
+		io.showMessege("Missile was added successfully to " + name);
 	}
 
 	/**
@@ -327,28 +356,24 @@ public class War {
 	 *            - Object that implements IOHandler.
 	 * @return boolean regarding the correctness of the input.
 	 */
-	private boolean addLauncher(IOHandler io) {
+	private void addLauncher(IOHandler io) {
 		io.flushBuffers();
-		try {
-			String id = io.getInput("Enter id:");
-			Launcher.State[] states = { Launcher.State.ACTIVE,
-					Launcher.State.HIDDEN };
-			String[] statesStrings = new String[states.length];
-			for (int i = 0; i < states.length; i++) {
-				statesStrings[i] = states[i].toString();
-			}
-			int stateindex = io.getChoice("Choose state:", statesStrings);
-			if (stateindex < 0 || stateindex > states.length)
-				throw new IllegalArgumentException(
-						"Please choose from selected values");
-			Launcher l;
-			launchers.add(l=new Launcher(name, "L" + id, states[stateindex - 1]));
-			if(isActive)
-				l.start();
-			return true;
-		} catch (Exception e) {
-			return false;
+		String id = io.getInput("Enter id:");
+		Launcher.State[] states = { Launcher.State.ACTIVE,
+				Launcher.State.HIDDEN };
+		String[] statesStrings = new String[states.length];
+		for (int i = 0; i < states.length; i++) {
+			statesStrings[i] = states[i].toString();
 		}
+		int stateindex = io.getChoice("Choose state:", statesStrings);
+		if (stateindex < 1 || stateindex > states.length)
+			throw new IllegalArgumentException(
+					"Please choose from available values");
+		Launcher l;
+		launchers.add(l = new Launcher(name, "L" + id, states[stateindex - 1]));
+		if (isActive)
+			l.start();
+		io.showMessege(l + " was added successfully to " + name);
 	}
 
 	/**
@@ -358,14 +383,14 @@ public class War {
 	 *            - Object that implements IOHandler.
 	 * @return boolean regarding the correctness of the input.
 	 */
-	private boolean addIronDome(IOHandler io) {
+	private void addIronDome(IOHandler io) {
 		io.flushBuffers();
 		String id = io.getInput("Enter id:");
 		IronDome i;
-		domes.add(i=new IronDome(name, "D" + id));
-		if(isActive)
+		domes.add(i = new IronDome(name, "D" + id));
+		if (isActive)
 			i.start();
-		return true;
+		io.showMessege(i + " was added successfully to " + name);
 	}
 
 	/**
@@ -375,7 +400,7 @@ public class War {
 	 *            - Object that implements IOHandler.
 	 * @return boolean regarding the correctness of the input.
 	 */
-	private boolean addArtillery(IOHandler io) {
+	private void addArtillery(IOHandler io) {
 		io.flushBuffers();
 		String id = io.getInput("Enter id:");
 		Artillery a;
@@ -386,23 +411,28 @@ public class War {
 			typeListStrings[i] = typeList[i].toString();
 		}
 		choice = io.getChoice("Select type:", typeListStrings);
-		try {
-			a = new Artillery(name, id, typeList[choice - 1]);
-		} catch (Exception e) {
-			return false;
-		}
+		if (choice < 1 || choice >= typeListStrings.length)
+			throw new IllegalArgumentException(
+					"Please choose from available values");
+		a = new Artillery(name, id, typeList[choice - 1]);
 		artillery.add(a);
-		if(isActive)
+		if (isActive)
 			a.start();
-		return true;
+		io.showMessege(a + " was added successfully to " + name);
 	}
 
 	/**
 	 * 
 	 * @param io
 	 * @return
+	 * @throws NoDomesAvailableException
+	 * @throws NoMissileAvailableException
+	 * @throws NoLauncherAvailableException
+	 * @throws NoArtilleryAvailableException
 	 */
-	private boolean addTarget(IOHandler io) {
+	private void addTarget(IOHandler io) throws NoDomesAvailableException,
+			NoMissileAvailableException, NoLauncherAvailableException,
+			NoArtilleryAvailableException {
 		int selection = io.getChoice("Add target to existing:", new String[] {
 				"Iron-Dome", "Artillery" });
 		int domesSize = domes.size();
@@ -415,15 +445,23 @@ public class War {
 		Artillery selectedArtillery;
 		Launcher selectedLauncher;
 		if (selection < 1 || selection > 2) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException(
+					"Please choose from available values");
 		} else {
 			if (selection == 1) { // handles missile targets
 				optionStrings = new String[domesSize];
+				if (domesSize == 0)
+					throw new NoDomesAvailableException(
+							"No Iron Domes available! please add one first");
 				for (i = 0; i < optionStrings.length; i++) {
 					optionStrings[i] = domes.get(i).toString();
 				}
 				selection = io.getChoice("Select Iron-Dome to add to:",
 						optionStrings);
+				if (selection < 1 || selection >= optionStrings.length) {
+					throw new IllegalArgumentException(
+							"Please choose from available values");
+				}
 				selectedDome = domes.get(selection - 1);
 				for (Launcher l : launchers) {
 					for (Missile m : l.getMissiles()) {
@@ -434,8 +472,8 @@ public class War {
 				optionStrings = new String[availableMissiles.size()];
 				i = 0;
 				if (availableMissiles.size() == 0) {
-					io.showError("There are no missiles to target right now");
-					return true;
+					throw new NoMissileAvailableException(
+							"There are no missiles to target right now");
 				} else {
 					for (Missile m : availableMissiles) {
 						optionStrings[i++] = m.toString();
@@ -443,6 +481,10 @@ public class War {
 					selection = io.getChoice(
 							"Select missile to assign as target:",
 							optionStrings);
+					if (selection < 1 || selection >= optionStrings.length) {
+						throw new IllegalArgumentException(
+								"Please choose from available values");
+					}
 					selectedMissile = availableMissiles.get(selection - 1);
 					selectedDome.assignTarget(new Target(name, selectedMissile,
 							0, selectedDome));
@@ -452,18 +494,26 @@ public class War {
 				for (i = 0; i < optionStrings.length; i++) {
 					optionStrings[i] = artillery.get(i).toString();
 				}
+				if (artillerySize == 0) {
+					throw new NoArtilleryAvailableException(
+							"No artillery available to add target to, add one first");
+				}
 				selection = io.getChoice("Select artillery to add target to:",
 						optionStrings);
+				if (selection < 1 || selection >= optionStrings.length) {
+					throw new IllegalArgumentException(
+							"Please choose from available values");
+				}
 				selectedArtillery = artillery.get(selection - 1);
 				optionStrings = new String[launchers.size()];
 				i = 0;
 				if (launchers.size() == 0) {
-					io.showError("There are no launchers to target right now");
-					return true;
+					throw new NoLauncherAvailableException(
+							"No launchers available to target");
 				} else {
 					List<Launcher> availableLaunchers = new Vector<>();
-					for(Launcher l : launchers){
-						if(l.getLState() != Launcher.State.DESTROYED){
+					for (Launcher l : launchers) {
+						if (l.getLState() != Launcher.State.DESTROYED) {
 							availableLaunchers.add(l);
 						}
 					}
@@ -474,15 +524,17 @@ public class War {
 					selection = io.getChoice(
 							"Select launcher to assign as target:",
 							optionStrings);
-					selectedLauncher = availableLaunchers.get(selection
-							- 1);
+					if (selection < 1 || selection >= optionStrings.length) {
+						throw new IllegalArgumentException(
+								"Please choose from available values");
+					}
+					selectedLauncher = availableLaunchers.get(selection - 1);
 					selectedArtillery.addTarget(new Target(name,
 							selectedLauncher, 0, selectedArtillery));
 				}
 			}
 		}
-		io.showMessege("Target Was Added Successfully!");
-		return true;
+		io.showMessege("Target was added successfully");
 	}
 
 	/**
@@ -526,7 +578,7 @@ public class War {
 			e.printStackTrace();
 		}
 
-		//Start of actual statistics
+		// Start of actual statistics
 		for (i = 0; i < domesSize; i++) {
 			missilesIntercepted += domes.get(i).getMissilesIntercepted();
 			if (domes.get(i).getMissilesIntercepted() > mostSuccessfulIronDome
@@ -556,38 +608,41 @@ public class War {
 	@Override
 	public String toString() {
 		try {
-			String stats = name + " has caused " + totalDamage + " damage to Israel."
-						   + WarFormatter.EOL + "Missiles fired: " + missilesFired
-						   + WarFormatter.EOL + "Missiles intercepted: "
-						   + missilesIntercepted + WarFormatter.EOL
-						   + "Launchers intercepted: " + launchersIntercepted
-						   + WarFormatter.EOL + "Most Successful Iron Dome: "
-						   + mostSuccessfulIronDome + WarFormatter.EOL
-						   + "Missiles intercepted: "
-						   + mostSuccessfulIronDome.getMissilesIntercepted()
-						   + WarFormatter.EOL + "Most Successful Artillery: "
-						   + mostSuccessfulArtillery + WarFormatter.EOL
-						   + "Launchers destroyed: "
-						   + mostSuccessfulArtillery.getLaunchersIntercepted()
-						   + WarFormatter.EOL + "Most Successful Launcher: "
-						   + mostSuccessfulLauncher + WarFormatter.EOL
-						   + "Missiles fired: "
-						   + mostSuccessfulLauncher.getMissilesFired()
-						   + WarFormatter.EOL + "Damage done: "
-						   + mostSuccessfulLauncher.getTotalDamage();
+			String stats = name + " has caused " + totalDamage
+					+ " damage to Israel." + WarFormatter.EOL
+					+ "Missiles fired: " + missilesFired + WarFormatter.EOL
+					+ "Missiles intercepted: " + missilesIntercepted
+					+ WarFormatter.EOL + "Launchers intercepted: "
+					+ launchersIntercepted + WarFormatter.EOL
+					+ "Most Successful Iron Dome: " + mostSuccessfulIronDome
+					+ WarFormatter.EOL + "Missiles intercepted: "
+					+ mostSuccessfulIronDome.getMissilesIntercepted()
+					+ WarFormatter.EOL + "Most Successful Artillery: "
+					+ mostSuccessfulArtillery + WarFormatter.EOL
+					+ "Launchers destroyed: "
+					+ mostSuccessfulArtillery.getLaunchersIntercepted()
+					+ WarFormatter.EOL + "Most Successful Launcher: "
+					+ mostSuccessfulLauncher + WarFormatter.EOL
+					+ "Missiles fired: "
+					+ mostSuccessfulLauncher.getMissilesFired()
+					+ WarFormatter.EOL + "Damage done: "
+					+ mostSuccessfulLauncher.getTotalDamage();
 			logStats(stats);
 			return stats;
 		} catch (NullPointerException e) {
-			String stats = name + " has caused " + totalDamage + " damage to Israel."
-						   + WarFormatter.EOL + "Missiles fired: " + missilesFired
-						   + WarFormatter.EOL + "Missiles intercepted: "
-						   + missilesIntercepted + WarFormatter.EOL
-						   + "Launchers intercepted: " + launchersIntercepted;
+			String stats = name + " has caused " + totalDamage
+					+ " damage to Israel." + WarFormatter.EOL
+					+ "Missiles fired: " + missilesFired + WarFormatter.EOL
+					+ "Missiles intercepted: " + missilesIntercepted
+					+ WarFormatter.EOL + "Launchers intercepted: "
+					+ launchersIntercepted;
 			logStats(stats);
 			return stats;
 		}
 	}
-	private void logStats(String stats){
-		logger.log(Level.INFO, "War "+ name + " has ended"+ WarFormatter.EOL + "\nWar Statistics:" + WarFormatter.EOL + stats, this);
+
+	private void logStats(String stats) {
+		logger.log(Level.INFO, "War " + name + " has ended" + WarFormatter.EOL
+				+ "\nWar Statistics:" + WarFormatter.EOL + stats, this);
 	}
 }

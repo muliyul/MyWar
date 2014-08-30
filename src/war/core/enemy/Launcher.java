@@ -55,8 +55,6 @@ public class Launcher extends Thread implements Destructable {
 		}
 	}
 
-
-
 	/**
 	 * Adds a missile to the launcher. Thread-safe method.
 	 * 
@@ -87,16 +85,17 @@ public class Launcher extends Thread implements Destructable {
 					this.wait();
 					missiles.get(0).start();
 				}
-			} catch (InterruptedException e) { // catch interrupt when the launcher is destroyed to end thread
+			} catch (InterruptedException e) { // catch interrupt when the
+												// launcher is destroyed to end
+												// thread
 
 			}
 		}
 	}
 
 	private void logLStart() {
-		logger.log(Level.INFO, this + " has started", this);		
+		logger.log(Level.INFO, this + " has started", this);
 	}
-
 
 	/**
 	 * Increase the number of missiles fired so far. Thread-safe.
@@ -169,16 +168,19 @@ public class Launcher extends Thread implements Destructable {
 	 */
 	public void destruct() {
 		this.state = State.DESTROYED;
-		isRunning=false;
-		for(Missile m : missiles ){
-			logMissileDestructBeforeLaunch(m);
+		isRunning = false;
+		for (Missile m : missiles) {
+			if (m.getMState() == Missile.State.LAUNCHING)
+				logMissileDestructBeforeLaunch(m);
 		}
 		this.interrupt();
 
 	}
 
 	private void logMissileDestructBeforeLaunch(Missile m) {
-		logger.log(Level.SEVERE, m + " was destructed before launch becuse his launcher "+ this + " was destroyed", m);
+		logger.log(Level.SEVERE, m
+				+ " was destructed before launch becuse his launcher " + this
+				+ " was destroyed", m);
 
 	}
 
