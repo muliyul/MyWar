@@ -73,14 +73,15 @@ public class Missile extends Thread implements Destructable {
 
 	@Override
 	public void run() {
+		logMStart();
 
 		try {
-			launchpad.acquire(); //Acquire launching permission from launcher
 			state = State.LAUNCHING;
+			launchpad.acquire(); //Acquire launching permission from launcher	
 			launch();
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			// should never get this exception
+			
 		} 
 
 		if (launcher.getLState() != Launcher.State.DESTROYED){
@@ -110,6 +111,10 @@ public class Missile extends Thread implements Destructable {
 		}
 
 		launchpad.release(); //Release launchpad for next missile.
+	}
+
+	private void logMStart() {
+		logger.log(Level.INFO, this + " has started", this);	
 	}
 
 	private void launch() throws InterruptedException {

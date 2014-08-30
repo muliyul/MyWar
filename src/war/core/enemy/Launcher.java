@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Semaphore;
 import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import war.core.Destructable;
@@ -17,7 +18,6 @@ public class Launcher extends Thread implements Destructable {
 		ACTIVE, HIDDEN, DESTROYED
 	}
 
-	private static int idGenerator = 100;
 	private String id;
 	private List<Missile> missiles;
 	private boolean isRunning;
@@ -55,17 +55,7 @@ public class Launcher extends Thread implements Destructable {
 		}
 	}
 
-	/**
-	 * 
-	 * @param warName
-	 *            - Name of war (for logging purposes).
-	 * @param state
-	 *            - The state of the launcher (DESTROYED is possible but has no
-	 *            use).
-	 */
-	public Launcher(String warName, State state) {
-		this(warName, "L" + (idGenerator++), state);
-	}
+
 
 	/**
 	 * Adds a missile to the launcher. Thread-safe method.
@@ -82,13 +72,11 @@ public class Launcher extends Thread implements Destructable {
 
 	@Override
 	public void run() {
+		logLStart();
 		isRunning = true;
-
-		//	int msize = missiles.size();
-		//	missiles.get(msize - 1).setLast();
 		if (missiles.size() > 0) {
 			for (int i = 0; i < missiles.size(); i++) {
-				//	if (!missiles.get(i).isAlive())
+
 				missiles.get(i).start();
 			}
 		}
@@ -103,10 +91,12 @@ public class Launcher extends Thread implements Destructable {
 
 			}
 		}
-
-
 	}
-	//  }
+
+	private void logLStart() {
+		logger.log(Level.INFO, this + " has started", this);		
+	}
+
 
 	/**
 	 * Increase the number of missiles fired so far. Thread-safe.
@@ -180,7 +170,15 @@ public class Launcher extends Thread implements Destructable {
 	public void destruct() {
 		this.state = State.DESTROYED;
 		isRunning=false;
+		for(Missile m : missiles ){
+			logMissileDestructBeforeLaunch(m);
+		}
 		this.interrupt();
+
+	}
+
+	private void logMissileDestructBeforeLaunch(Missile m) {
+		logger.log(Level.SEVERE, m + " was destructed before launch becuse his launcher "+ this + " was destroyed", m);
 
 	}
 
