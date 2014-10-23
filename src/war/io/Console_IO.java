@@ -6,8 +6,8 @@ import java.util.Scanner;
 import war.utils.WarFormatter;
 
 public class Console_IO implements IOHandler {
-	private Scanner in = new Scanner(System.in);
-	private PrintStream out = System.out;
+	private static Scanner in = new Scanner(System.in);
+	private static PrintStream out = System.out;
 
 	@Override
 	public void showMessege(String s) {
